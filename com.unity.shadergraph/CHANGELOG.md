@@ -1,5 +1,7 @@
 ## [3.3.0]
 
+- Your system locale can no longer cause incorrect commands due to full stops being converted to commas.
+
 ## [3.2.0]
 
 ## [3.1.0]
