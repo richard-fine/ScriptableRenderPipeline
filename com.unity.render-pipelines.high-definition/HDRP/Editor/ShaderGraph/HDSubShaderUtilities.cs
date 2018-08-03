@@ -470,11 +470,21 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         public List<string> StencilOverride;
         public List<string> RequiredFields;         // feeds into the dependency analysis
         public ShaderGraphRequirements requirements;
+
+        // All these lists could probably be hashed to aid lookups.
+        public bool VertexShaderUsesSlot(int slotId)
+        {
+            return VertexShaderSlots.Contains(slotId);
+        }
+        public bool PixelShaderUsesSlot(int slotId)
+        {
+            return PixelShaderSlots.Contains(slotId);
+        }
     };
 
     public static class HDSubShaderUtilities
     {
-        public static bool GenerateShaderPass(AbstractMaterialNode masterNode, Pass pass, GenerationMode mode, SurfaceMaterialOptions materialOptions, HashSet<string> activeFields, ShaderGenerator result, List<string> sourceAssetDependencyPaths)
+        public static bool GenerateShaderPass(AbstractMaterialNode masterNode, Pass pass, GenerationMode mode, SurfaceMaterialOptions materialOptions, HashSet<string> activeFields, List<string> activeUniforms, ShaderGenerator result, List<string> sourceAssetDependencyPaths)
         {
             string templatePath = Path.Combine(Path.Combine(HDUtils.GetHDRenderPipelinePath(), "Editor"), "ShaderGraph");
             string templateLocation = Path.Combine(templatePath, pass.TemplateName);
@@ -635,6 +645,15 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 graph.AddShaderChunk("// Shared Graph Properties (uniform inputs)");
                 graph.AddShaderChunk(sharedProperties.GetPropertiesDeclaration(1));
+
+                {
+                    var builder = new ShaderStringBuilder(1);
+                    foreach (var uniform in activeUniforms)
+                    {
+                        builder.AppendLine(uniform);
+                    }
+                    graph.AddShaderChunk(builder.ToString());
+                }
 
                 if (vertexActive)
                 {
@@ -800,6 +819,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
                 materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.Zero;
+                //materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
                 materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
                 materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.On;
                 materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Geometry;
@@ -812,6 +832,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     case AlphaMode.Alpha:
                         materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.SrcAlpha;
                         materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
+                        //materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
                         materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
                         materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
                         materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
@@ -820,6 +841,16 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     case AlphaMode.Additive:
                         materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
                         materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.One;
+                        //materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
+                        materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
+                        materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
+                        materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
+                        materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
+                        break;
+                    case AlphaMode.Premultiply:
+                        materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
+                        materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
+                        //materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
                         materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
                         materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
                         materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;

@@ -26,16 +26,26 @@ Pass
     //-------------------------------------------------------------------------------------
     // Variant Definitions (active field translations to HDRP defines)
     //-------------------------------------------------------------------------------------
-        $AlphaTest:                      #define _ALPHATEST_ON 1
         $Material.SubsurfaceScattering:  #define _MATERIAL_FEATURE_SUBSURFACE_SCATTERING 1
         $Material.Transmission:          #define _MATERIAL_FEATURE_TRANSMISSION 1
         $Material.Anisotropy:            #define _MATERIAL_FEATURE_ANISOTROPY 1
-        $Material.ClearCoat:             #define _MATERIAL_FEATURE_CLEAR_COAT 1
         $Material.Iridescence:           #define _MATERIAL_FEATURE_IRIDESCENCE 1
         $Material.SpecularColor:         #define _MATERIAL_FEATURE_SPECULAR_COLOR 1
+        $SurfaceDescription.CoatMask:    #define _MATERIAL_FEATURE_CLEAR_COAT 1
+        $SurfaceDescription.Emission:    #define _EMISSION 1
         $SurfaceType.Transparent:        #define _SURFACE_TYPE_TRANSPARENT 1
         $BlendMode.Alpha:                #define _BLENDMODE_ALPHA 1
         $BlendMode.Add:                  #define _BLENDMODE_ADD 1
+        $BlendMode.Premultiply:          #define _BLENDMODE_PRE_MULTIPLY 1        
+        $BlendMode.PreserveSpecular:     #define _BLENDMODE_PRESERVE_SPECULAR_LIGHTING 1
+        $AlphaTest:                      #define _ALPHATEST_ON 1
+        $AlphaFog:                       #define _ENABLE_FOG_ON_TRANSPARENT 1
+        $Occlusion:                      #define _OCCLUSION 1
+        $BentNormal:                     #define _BENTNORMAL 1
+        $BentNormalSpecularOcclusion:    #define _BENTNORMAL_SPECULAR_OCCLUSION 1
+        $Specular.EnergyConserving:      #define _ENERGY_CONSERVING_SPECULAR 1
+        $Specular.AA:                    #define _ENABLE_GEOMETRIC_SPECULAR_AA 1
+
     //-------------------------------------------------------------------------------------
     // End Variant Definitions
     //-------------------------------------------------------------------------------------
@@ -50,7 +60,7 @@ Pass
     // #define SURFACE_GRADIENT
 
     // If we use subsurface scattering, enable output split lighting (for forward pass)
-    #if defined(_MATID_SSS) && !defined(_SURFACE_TYPE_TRANSPARENT)
+    #if defined(_MATERIAL_FEATURE_SUBSURFACE_SCATTERING) && !defined(_SURFACE_TYPE_TRANSPARENT)
     #define OUTPUT_SPLIT_LIGHTING
     #endif
 
@@ -106,6 +116,7 @@ $splice(Defines)
         #include "HDRP/Material/Material.hlsl"
     #endif
     #include "HDRP/Material/MaterialUtilities.hlsl"
+    #include "HDRP/Material/Decal/DecalUtilities.hlsl"
 
     // this function assumes the bitangent flip is encoded in tangentWS.w
     // TODO: move this function to HDRP shared file, once we merge with HDRP repo
@@ -127,6 +138,20 @@ $splice(Defines)
         worldToTangent[1] = worldToTangent[1] * renormFactor;
         worldToTangent[2] = worldToTangent[2] * renormFactor;		// normalizes the interpolated vertex normal
         return worldToTangent;
+    }
+
+    // This function is cloned from LitData.hlsl here until it gets moved into commonLighting.hlsl. This should definitely
+    // be removed/consolidated.
+    float GetSpecularOcclusionFromBentAO(float3 V, float3 bentNormalWS, SurfaceData surfaceData)
+    {
+        // Retrieve cone angle
+        // Ambient occlusion is cosine weighted, thus use following equation. See slide 129
+        float cosAv = sqrt(1.0 - surfaceData.ambientOcclusion);
+        float roughness = max(PerceptualSmoothnessToRoughness(surfaceData.perceptualSmoothness), 0.01); // Clamp to 0.01 to avoid edge cases
+        float cosAs = exp2((-log(10.0)/log(2.0)) * Sq(roughness));
+        float cosB = dot(bentNormalWS, reflect(-V, surfaceData.normalWS));
+
+        return SphericalCapIntersectionSolidArea(cosAv, cosAs, cosB) / (TWO_PI * (1.0 - cosAs));
     }
 
     //-------------------------------------------------------------------------------------
@@ -151,24 +176,25 @@ $features.modifyMesh:   $include("VertexAnimation.template.hlsl")
 
 $include("SharedCode.template.hlsl")
 
-
-    void BuildSurfaceData(FragInputs fragInputs, SurfaceDescription surfaceDescription, float3 V, out SurfaceData surfaceData)
+    void BuildSurfaceData(FragInputs fragInputs, SurfaceDescription surfaceDescription, float3 V, out SurfaceData surfaceData, out float3 bentNormalWS)
     {
         // setup defaults -- these are used if the graph doesn't output a value
         ZERO_INITIALIZE(SurfaceData, surfaceData);
-        surfaceData.ambientOcclusion =      1.0f;
-        surfaceData.subsurfaceMask =        1.0f;
 
         // copy across graph values, if defined
-        $SurfaceDescription.Albedo:               surfaceData.baseColor =             surfaceDescription.Albedo;
-        $SurfaceDescription.Smoothness:           surfaceData.perceptualSmoothness =  surfaceDescription.Smoothness;
-        $SurfaceDescription.Occlusion:            surfaceData.ambientOcclusion =      surfaceDescription.Occlusion;
-        $SurfaceDescription.Metallic:             surfaceData.metallic =              surfaceDescription.Metallic;
-        //                                  surfaceData.thickness =             surfaceDescription.Thickness;
-        //                                  surfaceData.diffusionProfile =      surfaceDescription.DiffusionProfile;
-        //                                  surfaceData.subsurfaceMask =        surfaceDescription.SubsurfaceMask;
-        $SurfaceDescription.Specular:             surfaceData.specularColor =         surfaceDescription.Specular;
-
+        $SurfaceDescription.Albedo:                     surfaceData.baseColor =             surfaceDescription.Albedo;
+        $SurfaceDescription.Smoothness:                 surfaceData.perceptualSmoothness =  surfaceDescription.Smoothness;
+        $SurfaceDescription.Occlusion:                  surfaceData.ambientOcclusion =      surfaceDescription.Occlusion;
+        $SurfaceDescription.Metallic:                   surfaceData.metallic =              surfaceDescription.Metallic;
+        $SurfaceDescription.SubsurfaceMask:             surfaceData.subsurfaceMask =        surfaceDescription.SubsurfaceMask;
+        $SurfaceDescription.Thickness:                  surfaceData.thickness =             surfaceDescription.Thickness;
+        $SurfaceDescription.DiffusionProfile:           surfaceData.diffusionProfile =      surfaceDescription.DiffusionProfile;
+        $SurfaceDescription.Specular:                   surfaceData.specularColor =         surfaceDescription.Specular;
+        $SurfaceDescription.CoatMask:                   surfaceData.coatMask =              surfaceDescription.CoatMask;
+        $SurfaceDescription.Anisotropy:                 surfaceData.anisotropy =            surfaceDescription.Anisotropy;
+        $SurfaceDescription.IridescenceMask:            surfaceData.iridescenceMask =       surfaceDescription.IridescenceMask;
+        $SurfaceDescription.IridescenceThickness:       surfaceData.iridescenceThickness =  surfaceDescription.IridescenceThickness;
+        
         // These static material feature allow compile time optimization
         surfaceData.materialFeatures = MATERIALFEATUREFLAGS_LIT_STANDARD;
 #ifdef _MATERIAL_FEATURE_SUBSURFACE_SCATTERING
@@ -180,9 +206,8 @@ $include("SharedCode.template.hlsl")
 #ifdef _MATERIAL_FEATURE_ANISOTROPY
         surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_ANISOTROPY;
 #endif
-#ifdef _MATERIAL_FEATURE_CLEAR_COAT
-        surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_CLEAR_COAT;
-#endif
+        $SurfaceDescription.CoatMask: surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_CLEAR_COAT;
+
 #ifdef _MATERIAL_FEATURE_IRIDESCENCE
         surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_IRIDESCENCE;
 #endif
@@ -190,38 +215,52 @@ $include("SharedCode.template.hlsl")
         surfaceData.materialFeatures |= MATERIALFEATUREFLAGS_LIT_SPECULAR_COLOR;
 #endif
 
+#if defined (_MATERIAL_FEATURE_SPECULAR_COLOR) && defined (_ENERGY_CONSERVING_SPECULAR)
+        // Require to have setup baseColor
+        // Reproduce the energy conservation done in legacy Unity. Not ideal but better for compatibility and users can unchek it
+        surfaceData.baseColor *= (1.0 - Max3(surfaceData.specularColor.r, surfaceData.specularColor.g, surfaceData.specularColor.b));
+#endif
+
         // tangent-space normal
-        float3 normalTS =                   float3(0.0f, 0.0f, 1.0f);
-        $SurfaceDescription.Normal:       normalTS =                   surfaceDescription.Normal;
+        float3 normalTS = float3(0.0f, 0.0f, 1.0f);
+        $SurfaceDescription.Normal: normalTS = surfaceDescription.Normal;
 
         // compute world space normal
         GetNormalWS(fragInputs, normalTS, surfaceData.normalWS);
+
+        float3 bentNormalTS = float3(0.0f, 0.0f, 1.0f);
+#ifdef _BENTNORMAL
+        bentNormalTS = surfaceDescription.BentNormal;
+        GetNormalWS(fragInputs, bentNormalTS, bentNormalWS);
+#else
+        bentNormalTS = normalTS;
+        bentNormalWS = surfaceData.normalWS;
+#endif
 
         // TODO: use surfaceDescription tangent definition for anisotropy
         surfaceData.tangentWS = normalize(fragInputs.worldToTangent[0].xyz);    // The tangent is not normalize in worldToTangent for mikkt. TODO: Check if it expected that we normalize with Morten. Tag: SURFACE_GRADIENT
         surfaceData.tangentWS = Orthonormalize(surfaceData.tangentWS, surfaceData.normalWS);
 
-        // Init other parameters
-        surfaceData.anisotropy = 0;
-        surfaceData.coatMask = 0.0f;
-        surfaceData.iridescenceThickness = 0.0;
-        surfaceData.iridescenceMask = 1.0;
-
         // Transparency parameters
         // Use thickness from SSS
         surfaceData.ior = 1.0;
         surfaceData.transmittanceColor = float3(1.0, 1.0, 1.0);
-        surfaceData.atDistance = 1000000.0;
+        surfaceData.atDistance = 1.0;
         surfaceData.transmittanceMask = 0.0;
 
         // By default we use the ambient occlusion with Tri-ace trick (apply outside) for specular occlusion.
         // If user provide bent normal then we process a better term
         surfaceData.specularOcclusion = 1.0;
-#if defined(_BENTNORMALMAP) && defined(_ENABLESPECULAROCCLUSION)
+#if defined(_BENTNORMAL) && defined(_BENTNORMAL_SPECULAR_OCCLUSION)
         // If we have bent normal and ambient occlusion, process a specular occlusion
         surfaceData.specularOcclusion = GetSpecularOcclusionFromBentAO(V, bentNormalWS, surfaceData);
-#elif defined(_MASKMAP)
-        surfaceData.specularOcclusion = GetSpecularOcclusionFromAmbientOcclusion(NdotV, surfaceData.ambientOcclusion, PerceptualSmoothnessToRoughness(surfaceData.perceptualSmoothness));
+#elif defined(_OCCLUSION)
+        surfaceData.specularOcclusion = GetSpecularOcclusionFromAmbientOcclusion(ClampNdotV(dot(surfaceData.normalWS, V)), surfaceData.ambientOcclusion, PerceptualSmoothnessToRoughness(surfaceData.perceptualSmoothness));
+#else
+        surfaceData.specularOcclusion = 1.0;
+#endif
+#ifdef _ENABLE_GEOMETRIC_SPECULAR_AA
+        surfaceData.perceptualSmoothness = GeometricNormalFiltering(surfaceData.perceptualSmoothness, fragInputs.worldToTangent[2], _SpecularAAScreenSpaceVariance, _SpecularAAThreshold);
 #endif
     }
 
@@ -241,13 +280,19 @@ $include("SharedCode.template.hlsl")
         // TODO: split graph evaluation to grab just alpha dependencies first? tricky..
         $AlphaTest:     DoAlphaTest(surfaceDescription.Alpha, surfaceDescription.AlphaClipThreshold);
 
-        BuildSurfaceData(fragInputs, surfaceDescription, V, surfaceData);
+        float3 bentNormalWS;
+        BuildSurfaceData(fragInputs, surfaceDescription, V, surfaceData, bentNormalWS);
+
+        $Decals: AddDecalContribution(posInput, surfaceData, surfaceDescription.Alpha);
 
         // Builtin Data
         // For back lighting we use the oposite vertex normal 
         InitBuiltinData(surfaceDescription.Alpha, surfaceData.normalWS, -fragInputs.worldToTangent[2], fragInputs.positionRWS, fragInputs.texCoord1, fragInputs.texCoord2, builtinData);
 
-$SurfaceDescription.Emission:     builtinData.emissiveColor =             surfaceDescription.Emission;
+#ifdef _EMISSION
+        builtinData.emissiveColor = surfaceDescription.Emission;
+        $AlbedoAffectsEmissive: builtinData.emissiveColor *= surfaceDescription.Albedo;
+#endif
 
         builtinData.distortion =                float2(0.0, 0.0);           // surfaceDescription.Distortion -- if distortion pass
         builtinData.distortionBlur =            0.0;                        // surfaceDescription.DistortionBlur -- if distortion pass

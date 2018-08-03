@@ -6,8 +6,7 @@ using UnityEngine.Experimental.Rendering.HDPipeline;
 
 namespace UnityEditor.Experimental.Rendering.HDPipeline
 {
-    [FormerName("UnityEditor.ShaderGraph.HDPBRSubShader")]
-    public class HDPBRSubShader : IPBRSubShader
+    public class HDLitSubShader : ILitSubShader
     {
         Pass m_PassGBuffer = new Pass()
         {
@@ -15,17 +14,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             LightMode = "GBuffer",
             TemplateName = "HDPBRPass.template",
             ShaderPassName = "SHADERPASS_GBUFFER",
-            StencilOverride = new List<string>()
-            {
-                "// Stencil setup for gbuffer",
-                "Stencil",
-                "{",
-                "   WriteMask 7",       // [_StencilWriteMask]    // default: StencilMask.Lighting  (fixed at compile time)
-                "   Ref  2",            // [_StencilRef]          // default: StencilLightingUsage.RegularLighting  (fixed at compile time)
-                "   Comp Always",
-                "   Pass Replace",
-                "}"
-            },
+
             ExtraDefines = new List<string>()
             {
                 "#pragma multi_compile _ DEBUG_DISPLAY",
@@ -47,19 +36,28 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                PBRMasterNode.AlbedoSlotId,
-                PBRMasterNode.NormalSlotId,
-                PBRMasterNode.MetallicSlotId,
-                PBRMasterNode.SpecularSlotId,
-                PBRMasterNode.EmissionSlotId,
-                PBRMasterNode.SmoothnessSlotId,
-                PBRMasterNode.OcclusionSlotId,
-                PBRMasterNode.AlphaSlotId,
-                PBRMasterNode.AlphaThresholdSlotId
+                LitMasterNode.AlbedoSlotId,
+                LitMasterNode.NormalSlotId,
+                LitMasterNode.BentNormalSlotId,
+                LitMasterNode.TangentSlotId,
+                LitMasterNode.SubsurfaceMaskSlotId,
+                LitMasterNode.ThicknessSlotId,
+                LitMasterNode.DiffusionProfileSlotId,
+                LitMasterNode.IridescenceMaskSlotId,
+                LitMasterNode.IridescenceThicknessSlotId,
+                LitMasterNode.SpecularSlotId,
+                LitMasterNode.CoatMaskSlotId,
+                LitMasterNode.MetallicSlotId,
+                LitMasterNode.EmissionSlotId,
+                LitMasterNode.SmoothnessSlotId,
+                LitMasterNode.OcclusionSlotId,
+                LitMasterNode.AlphaSlotId,
+                LitMasterNode.AlphaThresholdSlotId,
+                LitMasterNode.AnisotropySlotId,
             },
             VertexShaderSlots = new List<int>()
             {
-                PBRMasterNode.PositionSlotId
+                LitMasterNode.PositionSlotId
             }
         };
 
@@ -69,17 +67,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             LightMode = "GBufferWithPrepass",
             TemplateName = "HDPBRPass.template",
             ShaderPassName = "SHADERPASS_GBUFFER",
-            StencilOverride = new List<string>()
-            {
-                "// Stencil setup for GBufferWithPrepass",
-                "Stencil",
-                "{",
-                "   WriteMask 7",       // _StencilWriteMask    // StencilMask.Lighting  (fixed at compile time)
-                "   Ref  2",            // _StencilRef          // StencilLightingUsage.RegularLighting  (fixed at compile time)
-                "   Comp Always",
-                "   Pass Replace",
-                "}"
-            },
             ExtraDefines = new List<string>()
             {
                 "#pragma multi_compile _ DEBUG_DISPLAY",
@@ -100,19 +87,28 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                PBRMasterNode.AlbedoSlotId,
-                PBRMasterNode.NormalSlotId,
-                PBRMasterNode.MetallicSlotId,
-                PBRMasterNode.SpecularSlotId,
-                PBRMasterNode.EmissionSlotId,
-                PBRMasterNode.SmoothnessSlotId,
-                PBRMasterNode.OcclusionSlotId,
-                PBRMasterNode.AlphaSlotId,
-                PBRMasterNode.AlphaThresholdSlotId
+                LitMasterNode.AlbedoSlotId,
+                LitMasterNode.NormalSlotId,
+                LitMasterNode.BentNormalSlotId,
+                LitMasterNode.TangentSlotId,
+                LitMasterNode.SubsurfaceMaskSlotId,
+                LitMasterNode.ThicknessSlotId,
+                LitMasterNode.DiffusionProfileSlotId,
+                LitMasterNode.IridescenceMaskSlotId,
+                LitMasterNode.IridescenceThicknessSlotId,
+                LitMasterNode.SpecularSlotId,
+                LitMasterNode.CoatMaskSlotId,
+                LitMasterNode.MetallicSlotId,
+                LitMasterNode.EmissionSlotId,
+                LitMasterNode.SmoothnessSlotId,
+                LitMasterNode.OcclusionSlotId,
+                LitMasterNode.AlphaSlotId,
+                LitMasterNode.AlphaThresholdSlotId,
+                LitMasterNode.AnisotropySlotId,
             },
             VertexShaderSlots = new List<int>()
             {
-                PBRMasterNode.PositionSlotId
+                LitMasterNode.PositionSlotId
             }
         };
 
@@ -130,27 +126,40 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             RequiredFields = new List<string>()
             {
                 "AttributesMesh.normalOS",
-                "AttributesMesh.tangentOS",     // Always present as we require it also in case of anisotropic lighting
+                "AttributesMesh.tangentOS",     // Always present as we require it also in case of Variants lighting
                 "AttributesMesh.uv0",
                 "AttributesMesh.uv1",
                 "AttributesMesh.color",
                 "AttributesMesh.uv2",           // SHADERPASS_LIGHT_TRANSPORT always uses uv2
+
+                // Need these also?
+                "FragInputs.worldToTangent",
+                "FragInputs.positionRWS",
             },
             PixelShaderSlots = new List<int>()
             {
-                PBRMasterNode.AlbedoSlotId,
-                PBRMasterNode.NormalSlotId,
-                PBRMasterNode.MetallicSlotId,
-                PBRMasterNode.SpecularSlotId,
-                PBRMasterNode.EmissionSlotId,
-                PBRMasterNode.SmoothnessSlotId,
-                PBRMasterNode.OcclusionSlotId,
-                PBRMasterNode.AlphaSlotId,
-                PBRMasterNode.AlphaThresholdSlotId
+                LitMasterNode.AlbedoSlotId,
+                LitMasterNode.NormalSlotId,
+                LitMasterNode.BentNormalSlotId,
+                LitMasterNode.TangentSlotId,
+                LitMasterNode.SubsurfaceMaskSlotId,
+                LitMasterNode.ThicknessSlotId,
+                LitMasterNode.DiffusionProfileSlotId,
+                LitMasterNode.IridescenceMaskSlotId,
+                LitMasterNode.IridescenceThicknessSlotId,
+                LitMasterNode.SpecularSlotId,
+                LitMasterNode.CoatMaskSlotId,
+                LitMasterNode.MetallicSlotId,
+                LitMasterNode.EmissionSlotId,
+                LitMasterNode.SmoothnessSlotId,
+                LitMasterNode.OcclusionSlotId,
+                LitMasterNode.AlphaSlotId,
+                LitMasterNode.AlphaThresholdSlotId,
+                LitMasterNode.AnisotropySlotId,
             },
             VertexShaderSlots = new List<int>()
             {
-                //PBRMasterNode.PositionSlotId
+                //LitMasterNode.PositionSlotId
             }
         };
 
@@ -176,12 +185,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                PBRMasterNode.AlphaSlotId,
-                PBRMasterNode.AlphaThresholdSlotId
+                LitMasterNode.AlphaSlotId,
+                LitMasterNode.AlphaThresholdSlotId
             },
             VertexShaderSlots = new List<int>()
             {
-                PBRMasterNode.PositionSlotId
+                LitMasterNode.PositionSlotId
             }
         };
 
@@ -203,12 +212,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                PBRMasterNode.AlphaSlotId,
-                PBRMasterNode.AlphaThresholdSlotId
+                LitMasterNode.AlphaSlotId,
+                LitMasterNode.AlphaThresholdSlotId
             },
             VertexShaderSlots = new List<int>()
             {
-                PBRMasterNode.PositionSlotId
+                LitMasterNode.PositionSlotId
             }
         };
 
@@ -239,12 +248,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                PBRMasterNode.AlphaSlotId,
-                PBRMasterNode.AlphaThresholdSlotId
+                LitMasterNode.AlphaSlotId,
+                LitMasterNode.AlphaThresholdSlotId
             },
             VertexShaderSlots = new List<int>()
             {
-                PBRMasterNode.PositionSlotId
+                LitMasterNode.PositionSlotId
             },
         };
 
@@ -269,12 +278,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                PBRMasterNode.AlphaSlotId,
-                PBRMasterNode.AlphaThresholdSlotId
+                LitMasterNode.AlphaSlotId,
+                LitMasterNode.AlphaThresholdSlotId
             },
             VertexShaderSlots = new List<int>()
             {
-                PBRMasterNode.PositionSlotId
+                LitMasterNode.PositionSlotId
             },
         };
 
@@ -300,12 +309,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                PBRMasterNode.AlphaSlotId,
-                PBRMasterNode.AlphaThresholdSlotId
+                LitMasterNode.AlphaSlotId,
+                LitMasterNode.AlphaThresholdSlotId
             },
             VertexShaderSlots = new List<int>()
             {
-                PBRMasterNode.PositionSlotId
+                LitMasterNode.PositionSlotId
             },
         };
 
@@ -337,19 +346,28 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                PBRMasterNode.AlbedoSlotId,
-                PBRMasterNode.NormalSlotId,
-                PBRMasterNode.MetallicSlotId,
-                PBRMasterNode.SpecularSlotId,
-                PBRMasterNode.EmissionSlotId,
-                PBRMasterNode.SmoothnessSlotId,
-                PBRMasterNode.OcclusionSlotId,
-                PBRMasterNode.AlphaSlotId,
-                PBRMasterNode.AlphaThresholdSlotId
+                LitMasterNode.AlbedoSlotId,
+                LitMasterNode.NormalSlotId,
+                LitMasterNode.BentNormalSlotId,
+                LitMasterNode.TangentSlotId,
+                LitMasterNode.SubsurfaceMaskSlotId,
+                LitMasterNode.ThicknessSlotId,
+                LitMasterNode.DiffusionProfileSlotId,
+                LitMasterNode.IridescenceMaskSlotId,
+                LitMasterNode.IridescenceThicknessSlotId,
+                LitMasterNode.SpecularSlotId,
+                LitMasterNode.CoatMaskSlotId,
+                LitMasterNode.MetallicSlotId,
+                LitMasterNode.EmissionSlotId,
+                LitMasterNode.SmoothnessSlotId,
+                LitMasterNode.OcclusionSlotId,
+                LitMasterNode.AlphaSlotId,
+                LitMasterNode.AlphaThresholdSlotId,
+                LitMasterNode.AnisotropySlotId,
             },
             VertexShaderSlots = new List<int>()
             {
-                PBRMasterNode.PositionSlotId
+                LitMasterNode.PositionSlotId
             },
         };
 
@@ -366,19 +384,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 "#pragma multi_compile _ DIRLIGHTMAP_COMBINED",
                 "#pragma multi_compile _ DYNAMICLIGHTMAP_ON",
                 "#pragma multi_compile _ SHADOWS_SHADOWMASK",
-                "#pragma multi_compile LIGHTLOOP_SINGLE_PASS LIGHTLOOP_TILE_PASS",
-                "#pragma multi_compile USE_FPTL_LIGHTLIST USE_CLUSTERED_LIGHTLIST"
-            },
-            StencilOverride = new List<string>()
-            {
-                "// Stencil setup for forward",
-                "Stencil",
-                "{",
-                "   WriteMask 7",       // [_StencilWriteMask]    // default: StencilMask.Lighting  (fixed at compile time)
-                "   Ref  2",            // [_StencilRef]          // default: StencilLightingUsage.RegularLighting  (fixed at compile time)
-                "   Comp Always",
-                "   Pass Replace",
-                "}"
+                "#define LIGHTLOOP_TILE_PASS",
+                //"#pragma multi_compile LIGHTLOOP_SINGLE_PASS LIGHTLOOP_TILE_PASS",
+                "#pragma multi_compile USE_FPTL_LIGHTLIST USE_CLUSTERED_LIGHTLIST",
             },
             Includes = new List<string>()
             {
@@ -387,23 +395,32 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             RequiredFields = new List<string>()
             {
                 "FragInputs.worldToTangent",
-//                "FragInputs.positionRWS",
+                "FragInputs.positionRWS",
             },
             PixelShaderSlots = new List<int>()
             {
-                PBRMasterNode.AlbedoSlotId,
-                PBRMasterNode.NormalSlotId,
-                PBRMasterNode.MetallicSlotId,
-                PBRMasterNode.SpecularSlotId,
-                PBRMasterNode.EmissionSlotId,
-                PBRMasterNode.SmoothnessSlotId,
-                PBRMasterNode.OcclusionSlotId,
-                PBRMasterNode.AlphaSlotId,
-                PBRMasterNode.AlphaThresholdSlotId
+                LitMasterNode.AlbedoSlotId,
+                LitMasterNode.NormalSlotId,
+                LitMasterNode.BentNormalSlotId,
+                LitMasterNode.TangentSlotId,
+                LitMasterNode.SubsurfaceMaskSlotId,
+                LitMasterNode.ThicknessSlotId,
+                LitMasterNode.DiffusionProfileSlotId,
+                LitMasterNode.IridescenceMaskSlotId,
+                LitMasterNode.IridescenceThicknessSlotId,
+                LitMasterNode.SpecularSlotId,
+                LitMasterNode.CoatMaskSlotId,
+                LitMasterNode.MetallicSlotId,
+                LitMasterNode.EmissionSlotId,
+                LitMasterNode.SmoothnessSlotId,
+                LitMasterNode.OcclusionSlotId,
+                LitMasterNode.AlphaSlotId,
+                LitMasterNode.AlphaThresholdSlotId,
+                LitMasterNode.AnisotropySlotId,
             },
             VertexShaderSlots = new List<int>()
             {
-                PBRMasterNode.PositionSlotId
+                LitMasterNode.PositionSlotId
             },
         };
 
@@ -429,12 +446,12 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             PixelShaderSlots = new List<int>()
             {
-                PBRMasterNode.AlphaSlotId,
-                PBRMasterNode.AlphaThresholdSlotId
+                LitMasterNode.AlphaSlotId,
+                LitMasterNode.AlphaThresholdSlotId
             },
             VertexShaderSlots = new List<int>()
             {
-                PBRMasterNode.PositionSlotId
+                LitMasterNode.PositionSlotId
             },
         };
 
@@ -442,40 +459,74 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             HashSet<string> activeFields = new HashSet<string>();
 
-            PBRMasterNode masterNode = iMasterNode as PBRMasterNode;
+            LitMasterNode masterNode = iMasterNode as LitMasterNode;
             if (masterNode == null)
             {
                 return activeFields;
             }
 
-            if (masterNode.twoSided.isOn)
+            if (masterNode.doubleSidedMode != DoubleSidedMode.Disabled)
             {
                 activeFields.Add("DoubleSided");
                 if (pass.ShaderPassName != "SHADERPASS_VELOCITY")   // HACK to get around lack of a good interpolator dependency system
                 {                                                   // we need to be able to build interpolators using multiple input structs
                                                                     // also: should only require isFrontFace if Normals are required...
-                    activeFields.Add("DoubleSided.Mirror");         // TODO: change this depending on what kind of normal flip you want..
+                    if (masterNode.doubleSidedMode == DoubleSidedMode.FlippedNormals)
+                    {
+                        activeFields.Add("DoubleSided.Flip");
+                    }
+                    else if (masterNode.doubleSidedMode == DoubleSidedMode.MirroredNormals)
+                    {
+                        activeFields.Add("DoubleSided.Mirror");
+                    }
+                        
                     activeFields.Add("FragInputs.isFrontFace");     // will need this for determining normal flip mode
                 }
             }
 
-            switch (masterNode.model)
+            switch (masterNode.materialType)
             {
-                case PBRMasterNode.Model.Metallic:
+                case LitMasterNode.MaterialType.Anisoptropy:
+                    activeFields.Add("Material.Anisotropy");
                     break;
-                case PBRMasterNode.Model.Specular:
+                case LitMasterNode.MaterialType.Iridescence:
+                    activeFields.Add("Material.Iridescence");
+                    break;
+                case LitMasterNode.MaterialType.SpecularColor:
                     activeFields.Add("Material.SpecularColor");
+                    break;
+                case LitMasterNode.MaterialType.Standard:
+                    activeFields.Add("Material.Standard");
+                    break;
+                case LitMasterNode.MaterialType.SubsurfaceScattering:
+                    {
+                        activeFields.Add("Material.SubsurfaceScattering");
+                        if (masterNode.sssTransmission.isOn)
+                        {
+                            activeFields.Add("Material.Transmission");
+                        }
+                    }
+                    break;
+                case LitMasterNode.MaterialType.Translucent:
+                    {
+                        activeFields.Add("Material.Translucent");
+                        activeFields.Add("Material.Transmission");
+                    }
                     break;
                 default:
                     // TODO: error!
                     break;
             }
 
-            float constantAlpha = 0.0f;
-            if (masterNode.IsSlotConnected(PBRMasterNode.AlphaThresholdSlotId) ||
-                (float.TryParse(masterNode.GetSlotValue(PBRMasterNode.AlphaThresholdSlotId, GenerationMode.ForReals), out constantAlpha) && (constantAlpha > 0.0f)))
+            if (pass.PixelShaderUsesSlot(LitMasterNode.AlphaThresholdSlotId))
             {
-                activeFields.Add("AlphaTest");
+                float constantAlpha = 0.0f;
+
+                if (masterNode.IsSlotConnected(LitMasterNode.AlphaThresholdSlotId) ||
+                    (float.TryParse(masterNode.GetSlotValue(LitMasterNode.AlphaThresholdSlotId, GenerationMode.ForReals), out constantAlpha) && (constantAlpha > 0.0f)))
+                {
+                    activeFields.Add("AlphaTest");
+                }
             }
 
             // Keywords for transparent
@@ -485,23 +536,28 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 // transparent-only defines
                 activeFields.Add("SurfaceType.Transparent");
 
-                // #pragma shader_feature _ _BLENDMODE_ALPHA _BLENDMODE_ADD _BLENDMODE_PRE_MULTIPLY
                 if (masterNode.alphaMode == AlphaMode.Alpha)
                 {
                     activeFields.Add("BlendMode.Alpha");
+                }
+                else if (masterNode.alphaMode == AlphaMode.Premultiply)
+                {
+                    activeFields.Add("BlendMode.Premultiply");
                 }
                 else if (masterNode.alphaMode == AlphaMode.Additive)
                 {
                     activeFields.Add("BlendMode.Add");
                 }
-//                else if (masterNode.alphaMode == PBRMasterNode.AlphaMode.PremultiplyAlpha)            // TODO
-//                {
-//                    defines.AddShaderChunk("#define _BLENDMODE_PRE_MULTIPLY 1", true);
-//                }
-            }
-            else
-            {
-                // opaque-only defines
+
+                if (masterNode.blendPreserveSpecular.isOn)
+                {
+                    activeFields.Add("BlendMode.PreserveSpecular");
+                }
+
+                if (masterNode.transparencyFog.isOn)
+                {
+                    activeFields.Add("AlphaFog");
+                }
             }
 
             // enable dithering LOD crossfade
@@ -509,36 +565,141 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             // TODO: We should have this keyword only if VelocityInGBuffer is enable, how to do that ?
             //#pragma multi_compile VELOCITYOUTPUT_OFF VELOCITYOUTPUT_ON
 
+            if (masterNode.receiveDecals.isOn)
+            {
+                activeFields.Add("Decals");
+            }
+
+            if (masterNode.specularAA.isOn)
+            {
+                activeFields.Add("Specular.AA");
+            }
+
+            if (masterNode.energyConservingSpecular.isOn)
+            {
+                activeFields.Add("Specular.EnergyConserving");
+            }
+
+            if (masterNode.albedoAffectsEmissive.isOn)
+            {
+                activeFields.Add("AlbedoAffectsEmissive");
+            }
+
+            if (masterNode.IsSlotConnected(LitMasterNode.BentNormalSlotId) && pass.PixelShaderUsesSlot(LitMasterNode.BentNormalSlotId))
+            {
+                activeFields.Add("BentNormal");
+                if (masterNode.bentNormalSpecularOcclusion.isOn)
+                {
+                    activeFields.Add("BentNormalSpecularOcclusion");
+                }
+            }
+
+            if (pass.PixelShaderUsesSlot(LitMasterNode.OcclusionSlotId))
+            {
+                // This check could be more elegant.
+                float ambientOcclusion = 0.0f;
+                float defaultAmbientOcclusion = 0.0f;
+                float.TryParse(masterNode.GetSlotValue(LitMasterNode.OcclusionSlotId, GenerationMode.ForReals), out ambientOcclusion);
+                float.TryParse(masterNode.GetSlotValue(LitMasterNode.OcclusionSlotId, GenerationMode.ForReals), out defaultAmbientOcclusion);
+                if (ambientOcclusion != defaultAmbientOcclusion)
+                {
+                    activeFields.Add("Occlusion");
+                }
+            }
+
             return activeFields;
+        }
+
+        private static List<string> GetActiveUniformsFromMasterNode(INode iMasterNode, Pass pass)
+        {
+            var masterNode = iMasterNode as LitMasterNode;
+
+            List<string> uniforms = new List<string>();
+
+            if (masterNode.specularAA.isOn)
+            {
+                // This is a short term measure for settings, probably need to be able to quickly update these setting in preview (via MaterialPropertyBlock?).
+                // Adjusting sliders currently forces re-parsing/compilation. Eek.
+                uniforms.Add("#define _SpecularAAScreenSpaceVariance (" + masterNode.specularAAScreenSpaceVariance.ToString() + ")");
+                uniforms.Add("#define _SpecularAAThreshold (" + masterNode.specularAAThreshold.ToString() + ")");
+            }
+
+            return uniforms;
         }
 
         private static bool GenerateShaderPassLit(AbstractMaterialNode masterNode, Pass pass, GenerationMode mode, SurfaceMaterialOptions materialOptions, ShaderGenerator result, List<string> sourceAssetDependencyPaths)
         {
             // apply master node options to active fields
             HashSet<string> activeFields = GetActiveFieldsFromMasterNode(masterNode, pass);
-            List<string> activeUniforms = new List<string>(); // Nothing right now.
+            List<string> activeUniforms = GetActiveUniformsFromMasterNode(masterNode, pass);
 
             // use standard shader pass generation
             return HDSubShaderUtilities.GenerateShaderPass(masterNode, pass, mode, materialOptions, activeFields, activeUniforms, result, sourceAssetDependencyPaths);
+        }
+
+        // Move all this down into the template?
+        void UpdateStencilOverrides(LitMasterNode masterNode)
+        {
+            string stencilRef = masterNode.RequiresSplitLighting() ? "   Ref  1" : "   Ref  2";
+
+            m_PassGBuffer.StencilOverride = new List<string>()
+            {
+                "// Stencil setup for gbuffer",
+                "Stencil",
+                "{",
+                "   WriteMask 7",
+                    stencilRef,
+                "   Comp Always",
+                "   Pass Replace",
+                "}"
+            };
+
+            // Is this wired up anywhere?
+            m_PassGBufferWithPrepass.StencilOverride = new List<string>()
+            {
+                "// Stencil setup for GBufferWithPrepass",
+                "Stencil",
+                "{",
+                "   WriteMask 7",
+                    stencilRef,
+                "   Comp Always",
+                "   Pass Replace",
+                "}"
+            };
+
+            m_PassForward.StencilOverride = new List<string>()
+            {
+                "// Stencil setup for forward",
+                "Stencil",
+                "{",
+                "   WriteMask 7",
+                    stencilRef,
+                "   Comp Always",
+                "   Pass Replace",
+                "}"
+            };
         }
 
         public string GetSubshader(IMasterNode iMasterNode, GenerationMode mode, List<string> sourceAssetDependencyPaths = null)
         {
             if (sourceAssetDependencyPaths != null)
             {
-                // HDPBRSubShader.cs
-                sourceAssetDependencyPaths.Add(AssetDatabase.GUIDToAssetPath("c4e8610eb7ce19747bb637c68acc55cd"));
+                // HDLitSubShader.cs
+                sourceAssetDependencyPaths.Add(AssetDatabase.GUIDToAssetPath("4f0bba2c9470edc4c8873e124ec9ecb6"));
                 // HDSubShaderUtilities.cs
                 sourceAssetDependencyPaths.Add(AssetDatabase.GUIDToAssetPath("713ced4e6eef4a44799a4dd59041484b"));
             }
 
-            var masterNode = iMasterNode as PBRMasterNode;
+            var masterNode = iMasterNode as LitMasterNode;
+
+            UpdateStencilOverrides(masterNode);
+
             var subShader = new ShaderGenerator();
             subShader.AddShaderChunk("SubShader", true);
             subShader.AddShaderChunk("{", true);
             subShader.Indent();
             {
-                SurfaceMaterialOptions materialOptions = HDSubShaderUtilities.BuildMaterialOptions(masterNode.surfaceType, masterNode.alphaMode, masterNode.twoSided.isOn);
+                SurfaceMaterialOptions materialOptions = HDSubShaderUtilities.BuildMaterialOptions(masterNode.surfaceType, masterNode.alphaMode, masterNode.doubleSidedMode != DoubleSidedMode.Disabled);
 
                 // Add tags at the SubShader level
                 {
@@ -550,6 +711,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 // generate the necessary shader passes
                 bool opaque = (masterNode.surfaceType == SurfaceType.Opaque);
                 bool transparent = (masterNode.surfaceType != SurfaceType.Opaque);
+                bool velocity = masterNode.motionVectors.isOn;
+
                 bool distortionActive = false;
                 bool transparentDepthPrepassActive = transparent && false;
                 bool transparentBackfaceActive = transparent && false;
@@ -567,6 +730,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 if (opaque)
                 {
                     GenerateShaderPassLit(masterNode, m_PassDepthOnly, mode, materialOptions, subShader, sourceAssetDependencyPaths);
+                }
+
+                if (velocity)
+                {
                     GenerateShaderPassLit(masterNode, m_PassMotionVectors, mode, materialOptions, subShader, sourceAssetDependencyPaths);
                 }
 
