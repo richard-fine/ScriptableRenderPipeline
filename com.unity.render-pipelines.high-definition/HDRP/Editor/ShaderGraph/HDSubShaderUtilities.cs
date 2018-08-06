@@ -830,7 +830,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 switch (alphaMode)
                 {
                     case AlphaMode.Alpha:
-                        materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.SrcAlpha;
+                        materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
                         materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
                         //materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
                         materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
@@ -856,7 +856,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                         materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
                         materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
                         break;
-                        // TODO: other blend modes
                 }
             }
 

@@ -873,15 +873,15 @@ namespace UnityEditor.ShaderGraph
                             materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
                             materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
                             break;
-                        case AlphaMode.Multiply:
-                            materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.DstColor;
-                            materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.Zero;
-                            materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
-                            materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
-                            materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
-                            materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
-                            materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
-                            break;
+                        //case AlphaMode.Multiply:
+                        //    materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.DstColor;
+                        //    materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.Zero;
+                        //    materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
+                        //    materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
+                        //    materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
+                        //    materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
+                        //    materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
+                        //    break;
                     }
                     break;
             }
