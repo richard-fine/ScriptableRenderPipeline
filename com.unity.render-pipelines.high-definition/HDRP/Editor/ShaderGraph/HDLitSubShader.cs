@@ -22,6 +22,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 "#pragma multi_compile _ DIRLIGHTMAP_COMBINED",
                 "#pragma multi_compile _ DYNAMICLIGHTMAP_ON",
                 "#pragma multi_compile _ SHADOWS_SHADOWMASK",
+                "#pragma multi_compile_instancing",
+                "#pragma instancing_options renderinglayer",
             },
             Includes = new List<string>()
             {
@@ -75,6 +77,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 "#pragma multi_compile _ DYNAMICLIGHTMAP_ON",
                 "#pragma multi_compile _ SHADOWS_SHADOWMASK",
                 "#define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST",
+                "#pragma multi_compile_instancing",
+                "#pragma instancing_options renderinglayer",
             },
             Includes = new List<string>()
             {
@@ -118,6 +122,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             LightMode = "Meta",
             TemplateName = "HDPBRPass.template",
             ShaderPassName = "SHADERPASS_LIGHT_TRANSPORT",
+            ExtraDefines = new List<string>()
+            {
+                "#pragma multi_compile_instancing",
+                "#pragma instancing_options renderinglayer",
+            },
             CullOverride = "Cull Off",
             Includes = new List<string>()
             {
@@ -173,6 +182,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             ExtraDefines = new List<string>()
             {
                 "#define USE_LEGACY_UNITY_MATRIX_VARIABLES",
+                "#pragma multi_compile_instancing",
+                "#pragma instancing_options renderinglayer",
             },
             Includes = new List<string>()
             {
@@ -200,6 +211,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             LightMode = "DepthOnly",
             TemplateName = "HDPBRPass.template",
             ShaderPassName = "SHADERPASS_DEPTH_ONLY",
+            ExtraDefines = new List<string>()
+            {
+                "#pragma multi_compile_instancing",
+                "#pragma instancing_options renderinglayer",
+            },
             ColorMaskOverride = "ColorMask 0",
             Includes = new List<string>()
             {
@@ -227,6 +243,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             LightMode = "MotionVectors",
             TemplateName = "HDPBRPass.template",
             ShaderPassName = "SHADERPASS_VELOCITY",
+            ExtraDefines = new List<string>()
+            {
+                "#pragma multi_compile_instancing",
+                "#pragma instancing_options renderinglayer",
+            },
             Includes = new List<string>()
             {
                 "#include \"HDRP/ShaderPass/ShaderPassVelocity.hlsl\"",
@@ -263,6 +284,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             LightMode = "DistortionVectors",
             TemplateName = "HDPBRPass.template",
             ShaderPassName = "SHADERPASS_DISTORTION",
+            ExtraDefines = new List<string>()
+            {
+                "#pragma multi_compile_instancing",
+                "#pragma instancing_options renderinglayer",
+            },
             BlendOverride = "Blend One One, One One",   // [_DistortionSrcBlend] [_DistortionDstBlend], [_DistortionBlurSrcBlend] [_DistortionBlurDstBlend]
             BlendOpOverride = "BlendOp Add, Add",       // Add, [_DistortionBlurBlendOp]
             ZTestOverride = "ZTest LEqual",             // [_ZTestModeDistortion]
@@ -297,6 +323,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             ExtraDefines = new List<string>()
             {
                 "#define CUTOFF_TRANSPARENT_DEPTH_PREPASS",
+                "#pragma multi_compile_instancing",
+                "#pragma instancing_options renderinglayer",
             },
             Includes = new List<string>()
             {
@@ -334,6 +362,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 "#pragma multi_compile _ SHADOWS_SHADOWMASK",
                 "#pragma multi_compile LIGHTLOOP_SINGLE_PASS LIGHTLOOP_TILE_PASS",
                 "#pragma multi_compile USE_FPTL_LIGHTLIST USE_CLUSTERED_LIGHTLIST",
+                "#pragma multi_compile_instancing",
+                "#pragma instancing_options renderinglayer",
             },
             Includes = new List<string>()
             {
@@ -387,6 +417,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 "#define LIGHTLOOP_TILE_PASS",
                 //"#pragma multi_compile LIGHTLOOP_SINGLE_PASS LIGHTLOOP_TILE_PASS",
                 "#pragma multi_compile USE_FPTL_LIGHTLIST USE_CLUSTERED_LIGHTLIST",
+                "#pragma multi_compile_instancing",
+                "#pragma instancing_options renderinglayer",
             },
             Includes = new List<string>()
             {
@@ -434,6 +466,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             ExtraDefines = new List<string>()
             {
                 "#define CUTOFF_TRANSPARENT_DEPTH_POSTPASS",
+                "#pragma multi_compile_instancing",
+                "#pragma instancing_options renderinglayer",
             },
             Includes = new List<string>()
             {

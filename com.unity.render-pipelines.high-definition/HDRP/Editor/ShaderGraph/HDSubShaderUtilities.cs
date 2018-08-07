@@ -819,7 +819,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
                 materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.Zero;
-                //materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
                 materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
                 materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.On;
                 materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Geometry;
@@ -832,7 +831,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     case AlphaMode.Alpha:
                         materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
                         materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
-                        //materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
                         materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
                         materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
                         materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
@@ -841,7 +839,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     case AlphaMode.Additive:
                         materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
                         materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.One;
-                        //materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
                         materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
                         materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
                         materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
@@ -850,7 +847,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     case AlphaMode.Premultiply:
                         materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
                         materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
-                        //materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
                         materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
                         materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
                         materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
