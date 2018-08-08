@@ -12,30 +12,31 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
     {
         internal struct AttributesMesh
         {
-            [Semantic("POSITION")]              Vector3 positionOS;
-            [Semantic("NORMAL")][Optional]      Vector3 normalOS;
-            [Semantic("TANGENT")][Optional]     Vector4 tangentOS;       // Stores bi-tangent sign in w
-            [Semantic("TEXCOORD0")][Optional]   Vector2 uv0;
-            [Semantic("TEXCOORD1")][Optional]   Vector2 uv1;
-            [Semantic("TEXCOORD2")][Optional]   Vector2 uv2;
-            [Semantic("TEXCOORD3")][Optional]   Vector2 uv3;
-            [Semantic("COLOR")][Optional]       Vector4 color;
+            [Semantic("POSITION")]                  Vector3 positionOS;
+            [Semantic("NORMAL")][Optional]          Vector3 normalOS;
+            [Semantic("TANGENT")][Optional]         Vector4 tangentOS;       // Stores bi-tangent sign in w
+            [Semantic("TEXCOORD0")][Optional]       Vector2 uv0;
+            [Semantic("TEXCOORD1")][Optional]       Vector2 uv1;
+            [Semantic("TEXCOORD2")][Optional]       Vector2 uv2;
+            [Semantic("TEXCOORD3")][Optional]       Vector2 uv3;
+            [Semantic("COLOR")][Optional]           Vector4 color;
+            [Semantic("INSTANCEID_SEMANTIC")] [PreprocessorIf("INSTANCING_ON")] uint instanceID;
         };
 
         [InterpolatorPack]
         internal struct VaryingsMeshToPS
         {
-            [Semantic("SV_Position")]           Vector4 positionCS;
-            [Optional]                          Vector3 positionRWS;
-            [Optional]                          Vector3 normalWS;
-            [Optional]                          Vector4 tangentWS;      // w contain mirror sign
-            [Optional]                          Vector2 texCoord0;
-            [Optional]                          Vector2 texCoord1;
-            [Optional]                          Vector2 texCoord2;
-            [Optional]                          Vector2 texCoord3;
-            [Optional]                          Vector4 color;
-            [Optional][Semantic("FRONT_FACE_SEMANTIC")][OverrideType("FRONT_FACE_TYPE")][PreprocessorIf("SHADER_STAGE_FRAGMENT")]
-            bool cullFace;
+            [Semantic("SV_Position")]                                               Vector4 positionCS;
+            [Optional]                                                              Vector3 positionRWS;
+            [Optional]                                                              Vector3 normalWS;
+            [Optional]                                                              Vector4 tangentWS;      // w contain mirror sign
+            [Optional]                                                              Vector2 texCoord0;
+            [Optional]                                                              Vector2 texCoord1;
+            [Optional]                                                              Vector2 texCoord2;
+            [Optional]                                                              Vector2 texCoord3;
+            [Optional]                                                              Vector4 color;
+            [Semantic("INSTANCEID_SEMANTIC")] [PreprocessorIf("INSTANCING_ON")]     uint instanceID;
+            [Optional][Semantic("FRONT_FACE_SEMANTIC")][OverrideType("FRONT_FACE_TYPE")][PreprocessorIf("SHADER_STAGE_FRAGMENT")] bool cullFace;
 
             public static Dependency[] tessellationDependencies = new Dependency[]
             {
@@ -47,6 +48,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 new Dependency("VaryingsMeshToPS.texCoord2",        "VaryingsMeshToDS.texCoord2"),
                 new Dependency("VaryingsMeshToPS.texCoord3",        "VaryingsMeshToDS.texCoord3"),
                 new Dependency("VaryingsMeshToPS.color",            "VaryingsMeshToDS.color"),
+                new Dependency("VaryingsMeshToPS.instanceID",       "VaryingsMeshToDS.instanceID"),
             };
 
             public static Dependency[] standardDependencies = new Dependency[]
@@ -59,6 +61,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 new Dependency("VaryingsMeshToPS.texCoord2",        "AttributesMesh.uv2"),
                 new Dependency("VaryingsMeshToPS.texCoord3",        "AttributesMesh.uv3"),
                 new Dependency("VaryingsMeshToPS.color",            "AttributesMesh.color"),
+                new Dependency("VaryingsMeshToPS.instanceID",       "AttributesMesh.instanceID"),
             };
         };
 
@@ -73,15 +76,17 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             [Optional]      Vector2 texCoord2;
             [Optional]      Vector2 texCoord3;
             [Optional]      Vector4 color;
+            [Semantic("INSTANCEID_SEMANTIC")] [PreprocessorIf("INSTANCING_ON")] uint instanceID;
 
             public static Dependency[] tessellationDependencies = new Dependency[]
             {
-                new Dependency("VaryingsMeshToDS.tangentWS",        "VaryingsMeshToPS.tangentWS"),
-                new Dependency("VaryingsMeshToDS.texCoord0",        "VaryingsMeshToPS.texCoord0"),
-                new Dependency("VaryingsMeshToDS.texCoord1",        "VaryingsMeshToPS.texCoord1"),
-                new Dependency("VaryingsMeshToDS.texCoord2",        "VaryingsMeshToPS.texCoord2"),
-                new Dependency("VaryingsMeshToDS.texCoord3",        "VaryingsMeshToPS.texCoord3"),
-                new Dependency("VaryingsMeshToDS.color",            "VaryingsMeshToPS.color"),
+                new Dependency("VaryingsMeshToDS.tangentWS",     "VaryingsMeshToPS.tangentWS"),
+                new Dependency("VaryingsMeshToDS.texCoord0",     "VaryingsMeshToPS.texCoord0"),
+                new Dependency("VaryingsMeshToDS.texCoord1",     "VaryingsMeshToPS.texCoord1"),
+                new Dependency("VaryingsMeshToDS.texCoord2",     "VaryingsMeshToPS.texCoord2"),
+                new Dependency("VaryingsMeshToDS.texCoord3",     "VaryingsMeshToPS.texCoord3"),
+                new Dependency("VaryingsMeshToDS.color",         "VaryingsMeshToPS.color"),
+                new Dependency("VaryingsMeshToDS.instanceID",    "VaryingsMeshToPS.instanceID"),
             };
         };
 
@@ -558,7 +563,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
             // check for vertex animation -- enables HAVE_VERTEX_MODIFICATION
             bool vertexActive = false;
-            if (masterNode.IsSlotConnected(PBRMasterNode.PositionSlotId))
+            //if (masterNode.IsSlotConnected(PBRMasterNode.PositionSlotId))
+            // Do we expect this to work with any HD Master Node? User created?
+            // Perhaps we need an intermediate HD master node with common slot definitions.
+            if (masterNode.IsSlotConnected(LitMasterNode.PositionSlotId)) 
             {
                 vertexActive = true;
                 activeFields.Add("features.modifyMesh");
