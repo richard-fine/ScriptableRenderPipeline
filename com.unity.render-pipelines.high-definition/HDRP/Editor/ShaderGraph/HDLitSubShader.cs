@@ -360,7 +360,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 "#pragma multi_compile _ DIRLIGHTMAP_COMBINED",
                 "#pragma multi_compile _ DYNAMICLIGHTMAP_ON",
                 "#pragma multi_compile _ SHADOWS_SHADOWMASK",
-                "#pragma multi_compile LIGHTLOOP_SINGLE_PASS LIGHTLOOP_TILE_PASS",
+                "#define LIGHTLOOP_TILE_PASS",
+                //"#pragma multi_compile LIGHTLOOP_SINGLE_PASS LIGHTLOOP_TILE_PASS",
                 "#pragma multi_compile USE_FPTL_LIGHTLIST USE_CLUSTERED_LIGHTLIST",
                 "#pragma multi_compile_instancing",
                 "#pragma instancing_options renderinglayer",
@@ -371,8 +372,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             },
             RequiredFields = new List<string>()
             {
-//                "FragInputs.worldToTangent",
-//                "FragInputs.positionRWS",
+                "FragInputs.worldToTangent",
+                "FragInputs.positionRWS",
             },
             PixelShaderSlots = new List<int>()
             {
@@ -671,6 +672,14 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             return HDSubShaderUtilities.GenerateShaderPass(masterNode, pass, mode, materialOptions, activeFields, activeUniforms, result, sourceAssetDependencyPaths);
         }
 
+        void UpdateCullOverrides(LitMasterNode masterNode)
+        {
+            if (masterNode.backThenFrontRendering.isOn)
+            {
+                m_PassForward.CullOverride = "Cull Back";
+            }
+        }
+
         // Move all this down into the template?
         void UpdateStencilOverrides(LitMasterNode masterNode)
         {
@@ -726,6 +735,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
             var masterNode = iMasterNode as LitMasterNode;
 
+            UpdateCullOverrides(masterNode);
             UpdateStencilOverrides(masterNode);
 
             var subShader = new ShaderGenerator();
@@ -749,7 +759,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
                 bool distortionActive = false;
                 bool transparentDepthPrepassActive = transparent && false;
-                bool transparentBackfaceActive = transparent && false;
+                bool transparentBackfaceActive = transparent && masterNode.backThenFrontRendering.isOn;
                 bool transparentDepthPostpassActive = transparent && false;
 
                 if (opaque)

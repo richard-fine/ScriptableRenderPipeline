@@ -196,6 +196,37 @@ namespace UnityEditor.ShaderGraph
         }
 
         [SerializeField]
+        bool m_DrawBeforeRefraction;
+
+        public ToggleData drawBeforeRefraction
+        {
+            get { return new ToggleData(m_DrawBeforeRefraction); }
+            set
+            {
+                if (m_DrawBeforeRefraction == value.isOn)
+                    return;
+                m_DrawBeforeRefraction = value.isOn;
+                Dirty(ModificationScope.Graph);
+            }
+        }
+
+        [SerializeField]
+        AlphaMode m_AlphaMode;
+
+        public AlphaMode alphaMode
+        {
+            get { return m_AlphaMode; }
+            set
+            {
+                if (m_AlphaMode == value)
+                    return;
+
+                m_AlphaMode = value;
+                Dirty(ModificationScope.Graph);
+            }
+        }
+
+        [SerializeField]
         bool m_BlendPreserveSpecular;
 
         public ToggleData blendPreserveSpecular
@@ -226,32 +257,31 @@ namespace UnityEditor.ShaderGraph
         }
 
         [SerializeField]
-        bool m_DrawBeforeRefraction;
+        bool m_BackThenFrontRendering;
 
-        public ToggleData drawBeforeRefraction
+        public ToggleData backThenFrontRendering
         {
-            get { return new ToggleData(m_DrawBeforeRefraction); }
+            get { return new ToggleData(m_BackThenFrontRendering); }
             set
             {
-                if (m_DrawBeforeRefraction == value.isOn)
+                if (m_BackThenFrontRendering == value.isOn)
                     return;
-                m_DrawBeforeRefraction = value.isOn;
+                m_BackThenFrontRendering = value.isOn;
                 Dirty(ModificationScope.Graph);
             }
         }
 
         [SerializeField]
-        AlphaMode m_AlphaMode;
+        int m_SortPriority;
 
-        public AlphaMode alphaMode
+        public int sortPriority
         {
-            get { return m_AlphaMode; }
+            get { return m_SortPriority; }
             set
             {
-                if (m_AlphaMode == value)
+                if (m_SortPriority == value)
                     return;
-
-                m_AlphaMode = value;
+                m_SortPriority = value;
                 Dirty(ModificationScope.Graph);
             }
         }
@@ -389,21 +419,6 @@ namespace UnityEditor.ShaderGraph
                 if (m_AlbedoAffectsEmissive == value.isOn)
                     return;
                 m_AlbedoAffectsEmissive = value.isOn;
-                Dirty(ModificationScope.Graph);
-            }
-        }
-
-        [SerializeField]
-        bool m_GPUInstancing;
-
-        public ToggleData gpuInstancing
-        {
-            get { return new ToggleData(m_GPUInstancing); }
-            set
-            {
-                if (m_GPUInstancing == value.isOn)
-                    return;
-                m_GPUInstancing = value.isOn;
                 Dirty(ModificationScope.Graph);
             }
         }

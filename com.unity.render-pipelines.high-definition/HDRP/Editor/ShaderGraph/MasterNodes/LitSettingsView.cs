@@ -65,6 +65,25 @@ namespace UnityEditor.ShaderGraph.Drawing
                 //        toggle.OnToggleChanged(ChangeDrawBeforeRefraction);
                 //    });
                 //});
+
+                ps.Add(new PropertyRow(new Label("    Back Then Front Rendering")), (row) =>
+                {
+                    row.Add(new Toggle(), (toggle) =>
+                    {
+                        toggle.value = m_Node.backThenFrontRendering.isOn;
+                        toggle.OnToggleChanged(ChangeBackThenFrontRendering);
+                    });
+                });
+
+                ps.Add(new PropertyRow(new Label("    Sort Priority")), (row) =>
+                {
+                    row.Add(new IntegerField(), (field) =>
+                    {
+                        field.value = m_Node.sortPriority;
+                        field.OnValueChanged(ChangeSortPriority);
+                    });
+                });
+
             }
 
             ps.Add(new PropertyRow(new Label("Double Sided")), (row) =>
@@ -157,15 +176,6 @@ namespace UnityEditor.ShaderGraph.Drawing
                 });
             });
 
-            //ps.Add(new PropertyRow(new Label("UV Channel")), (row) =>
-            //{
-            //    row.Add(new EnumField(UVChannel.UV0), (field) =>
-            //    {
-            //        field.value = m_Node.uvChannel;
-            //        field.OnValueChanged(ChangeUVChannel);
-            //    });
-            //});
-
             ps.Add(new PropertyRow(new Label("Albedo Affects Emissive")), (row) =>
             {
                 row.Add(new Toggle(), (toggle) =>
@@ -174,15 +184,6 @@ namespace UnityEditor.ShaderGraph.Drawing
                     toggle.OnToggleChanged(ChangeAlbedoAffectsEmissive);
                 });
             });
-
-            //ps.Add(new PropertyRow(new Label("GPU Instancing")), (row) =>
-            //{
-            //    row.Add(new Toggle(), (toggle) =>
-            //    {
-            //        toggle.value = m_Node.gpuInstancing.isOn;
-            //        toggle.OnToggleChanged(ChangeGPUInstancing);
-            //    });
-            //});
 
             ps.Add(new PropertyRow(new Label("Specular Occlusion From Bent Normal ")), (row) =>
             {
@@ -264,6 +265,23 @@ namespace UnityEditor.ShaderGraph.Drawing
             m_Node.drawBeforeRefraction = td;
         }
 
+        void ChangeBackThenFrontRendering(ChangeEvent<bool> evt)
+        {
+            m_Node.owner.owner.RegisterCompleteObjectUndo("Back Then Front Rendering Change");
+            ToggleData td = m_Node.backThenFrontRendering;
+            td.isOn = evt.newValue;
+            m_Node.backThenFrontRendering = td;
+        }
+
+        void ChangeSortPriority(ChangeEvent<int> evt)
+        {
+            m_Node.sortPriority = Math.Max(-100, Math.Min(evt.newValue, 100));
+            if (Equals(m_Node.sortPriority, evt.newValue))
+                return;
+
+            m_Node.owner.owner.RegisterCompleteObjectUndo("Sort Priority Change");
+        }
+
         void ChangeDecal(ChangeEvent<bool> evt)
         {
             m_Node.owner.owner.RegisterCompleteObjectUndo("Decal Change");
@@ -329,14 +347,6 @@ namespace UnityEditor.ShaderGraph.Drawing
             ToggleData td = m_Node.albedoAffectsEmissive;
             td.isOn = evt.newValue;
             m_Node.albedoAffectsEmissive = td;
-        }
-
-        void ChangeGPUInstancing(ChangeEvent<bool> evt)
-        {
-            m_Node.owner.owner.RegisterCompleteObjectUndo("GPU Instancing Change");
-            ToggleData td = m_Node.gpuInstancing;
-            td.isOn = evt.newValue;
-            m_Node.gpuInstancing = td;
         }
 
         void ChangeBentNormalSpecularOcclusion(ChangeEvent<bool> evt)
