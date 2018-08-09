@@ -820,7 +820,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             }
         }
 
-        public static SurfaceMaterialOptions BuildMaterialOptions(SurfaceType surfaceType, AlphaMode alphaMode, bool twoSided)
+        public static SurfaceMaterialOptions BuildMaterialOptions(SurfaceType surfaceType, AlphaMode alphaMode, bool twoSided, bool beforeRefraction, int sortPriority)
         {
             SurfaceMaterialOptions materialOptions = new SurfaceMaterialOptions();
             if (surfaceType == SurfaceType.Opaque)
@@ -839,30 +839,28 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     case AlphaMode.Alpha:
                         materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
                         materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
-                        materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
-                        materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
-                        materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
-                        materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
                         break;
                     case AlphaMode.Additive:
                         materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
                         materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.One;
-                        materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
-                        materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
-                        materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
-                        materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
                         break;
                     case AlphaMode.Premultiply:
                         materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
                         materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
-                        materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
-                        materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
-                        materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
-                        materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
                         break;
                 }
             }
 
+            materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
+            materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
+            materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
+            materialOptions.renderQueueOffset = sortPriority;
+            if (beforeRefraction)
+            {
+                // This is certainly hacky, there is no queue entry for PreRefraction. Doing this to avoid completely flattening the queue to a integer, but perhaps it should be flattened.
+                materialOptions.renderQueueOffset -= HDRenderQueue.Priority.Transparent - HDRenderQueue.Priority.PreRefraction;
+            }
+            materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
             materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
 
             return materialOptions;

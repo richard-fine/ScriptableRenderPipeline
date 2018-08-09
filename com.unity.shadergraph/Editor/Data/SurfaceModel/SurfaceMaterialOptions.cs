@@ -80,6 +80,9 @@ namespace UnityEditor.ShaderGraph
         private RenderQueue m_RenderQueue = RenderQueue.Geometry;
 
         [SerializeField]
+        private int m_RenderQueueOffset = 0;
+
+        [SerializeField]
         private RenderType m_RenderType = RenderType.Opaque;
 
         [SerializeField]
@@ -93,6 +96,7 @@ namespace UnityEditor.ShaderGraph
             zTest = ZTest.LEqual;
             zWrite = ZWrite.On;
             renderQueue = RenderQueue.Geometry;
+            renderQueueOffset = 0;
             renderType = RenderType.Opaque;
             lod = 200;
         }
@@ -104,7 +108,9 @@ namespace UnityEditor.ShaderGraph
             {
                 builder.AppendLine(@"""RenderPipeline""=""HDRenderPipeline""");
                 builder.AppendLine("\"RenderType\"=\"{0}\"", renderType);
-                builder.AppendLine("\"Queue\"=\"{0}\"", renderQueue);
+
+                string seperator = renderQueueOffset >= 0 ? "+" : "";
+                builder.AppendLine("\"Queue\"=\"{0}{1}{2}\"", renderQueue, seperator, renderQueueOffset);
             }
         }
 
@@ -134,6 +140,7 @@ namespace UnityEditor.ShaderGraph
         public ZTest zTest { get { return m_ZTest; } set { m_ZTest = value; } }
         public ZWrite zWrite { get { return m_ZWrite; } set { m_ZWrite = value; } }
         public RenderQueue renderQueue { get { return m_RenderQueue; } set { m_RenderQueue = value; } }
+        public int renderQueueOffset { get { return m_RenderQueueOffset; } set { m_RenderQueueOffset = value; } }
         public RenderType renderType { get { return m_RenderType; } set { m_RenderType = value; } }
         public int lod { get { return m_LOD; } set { m_LOD = value; } }
     }

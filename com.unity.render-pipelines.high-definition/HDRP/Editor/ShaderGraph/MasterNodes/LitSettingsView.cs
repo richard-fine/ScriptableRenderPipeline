@@ -14,6 +14,8 @@ namespace UnityEditor.ShaderGraph.Drawing
     {
         LitMasterNode m_Node;
 
+        IntegerField m_SortPiorityField;
+
         public LitSettingsView(LitMasterNode node)
         {
             m_Node = node;
@@ -57,14 +59,14 @@ namespace UnityEditor.ShaderGraph.Drawing
                     });
                 });
 
-                //ps.Add(new PropertyRow(new Label("    Draw Before Refraction")), (row) =>
-                //{
-                //    row.Add(new Toggle(), (toggle) =>
-                //    {
-                //        toggle.value = m_Node.drawBeforeRefraction.isOn;
-                //        toggle.OnToggleChanged(ChangeDrawBeforeRefraction);
-                //    });
-                //});
+                ps.Add(new PropertyRow(new Label("    Draw Before Refraction")), (row) =>
+                {
+                    row.Add(new Toggle(), (toggle) =>
+                    {
+                        toggle.value = m_Node.drawBeforeRefraction.isOn;
+                        toggle.OnToggleChanged(ChangeDrawBeforeRefraction);
+                    });
+                });
 
                 ps.Add(new PropertyRow(new Label("    Back Then Front Rendering")), (row) =>
                 {
@@ -75,15 +77,15 @@ namespace UnityEditor.ShaderGraph.Drawing
                     });
                 });
 
+                m_SortPiorityField = new IntegerField();
                 ps.Add(new PropertyRow(new Label("    Sort Priority")), (row) =>
                 {
-                    row.Add(new IntegerField(), (field) =>
+                    row.Add(m_SortPiorityField, (field) =>
                     {
                         field.value = m_Node.sortPriority;
                         field.OnValueChanged(ChangeSortPriority);
                     });
                 });
-
             }
 
             ps.Add(new PropertyRow(new Label("Double Sided")), (row) =>
@@ -275,7 +277,9 @@ namespace UnityEditor.ShaderGraph.Drawing
 
         void ChangeSortPriority(ChangeEvent<int> evt)
         {
-            m_Node.sortPriority = Math.Max(-100, Math.Min(evt.newValue, 100));
+            m_Node.sortPriority = Math.Max(-HDRenderQueue.k_TransparentPriorityQueueRange, Math.Min(evt.newValue, HDRenderQueue.k_TransparentPriorityQueueRange));
+            // Force the text to match.
+            m_SortPiorityField.value = m_Node.sortPriority;
             if (Equals(m_Node.sortPriority, evt.newValue))
                 return;
 
