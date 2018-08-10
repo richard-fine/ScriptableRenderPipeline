@@ -88,6 +88,36 @@ namespace UnityEditor.ShaderGraph.Drawing
                 });
             }
 
+            ps.Add(new PropertyRow(new Label("Alpha Cutoff")), (row) =>
+            {
+                row.Add(new Toggle(), (toggle) =>
+                {
+                    toggle.value = m_Node.alphaTest.isOn;
+                    toggle.OnToggleChanged(ChangeAlphaTest);
+                });
+            });
+
+            if (m_Node.surfaceType == SurfaceType.Transparent && m_Node.alphaTest.isOn)
+            {
+                ps.Add(new PropertyRow(new Label("    Alpha Cutoff Depth Prepass")), (row) =>
+                {
+                    row.Add(new Toggle(), (toggle) =>
+                    {
+                        toggle.value = m_Node.alphaTestDepthPrepass.isOn;
+                        toggle.OnToggleChanged(ChangeAlphaTestPrepass);
+                    });
+                });
+
+                ps.Add(new PropertyRow(new Label("    Alpha Cutoff Depth Postpass")), (row) =>
+                {
+                    row.Add(new Toggle(), (toggle) =>
+                    {
+                        toggle.value = m_Node.alphaTestDepthPostpass.isOn;
+                        toggle.OnToggleChanged(ChangeAlphaTestPostpass);
+                    });
+                });
+            }
+
             ps.Add(new PropertyRow(new Label("Double Sided")), (row) =>
             {
                 row.Add(new EnumField(DoubleSidedMode.Disabled), (field) =>
@@ -286,6 +316,30 @@ namespace UnityEditor.ShaderGraph.Drawing
             m_Node.owner.owner.RegisterCompleteObjectUndo("Sort Priority Change");
         }
 
+        void ChangeAlphaTest(ChangeEvent<bool> evt)
+        {
+            m_Node.owner.owner.RegisterCompleteObjectUndo("Alpha Test Change");
+            ToggleData td = m_Node.alphaTest;
+            td.isOn = evt.newValue;
+            m_Node.alphaTest = td;
+        }
+
+        void ChangeAlphaTestPrepass(ChangeEvent<bool> evt)
+        {
+            m_Node.owner.owner.RegisterCompleteObjectUndo("Alpha Test Depth Prepass Change");
+            ToggleData td = m_Node.alphaTestDepthPrepass;
+            td.isOn = evt.newValue;
+            m_Node.alphaTestDepthPrepass = td;
+        }
+
+        void ChangeAlphaTestPostpass(ChangeEvent<bool> evt)
+        {
+            m_Node.owner.owner.RegisterCompleteObjectUndo("Alpha Test Depth Postpass Change");
+            ToggleData td = m_Node.alphaTestDepthPostpass;
+            td.isOn = evt.newValue;
+            m_Node.alphaTestDepthPostpass = td;
+        }
+
         void ChangeDecal(ChangeEvent<bool> evt)
         {
             m_Node.owner.owner.RegisterCompleteObjectUndo("Decal Change");
@@ -334,15 +388,6 @@ namespace UnityEditor.ShaderGraph.Drawing
             ToggleData td = m_Node.motionVectors;
             td.isOn = evt.newValue;
             m_Node.motionVectors = td;
-        }
-
-        void ChangeUVChannel(ChangeEvent<Enum> evt)
-        {
-            if (Equals(m_Node.uvChannel, evt.newValue))
-                return;
-
-            m_Node.owner.owner.RegisterCompleteObjectUndo("UV Channel Change");
-            m_Node.uvChannel = (UVChannel)evt.newValue;
         }
 
         void ChangeAlbedoAffectsEmissive(ChangeEvent<bool> evt)

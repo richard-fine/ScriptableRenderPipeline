@@ -30,6 +30,8 @@ namespace UnityEditor.ShaderGraph
         public const string OcclusionSlotName = "Occlusion";
         public const string AlphaSlotName = "Alpha";
         public const string AlphaClipThresholdSlotName = "AlphaClipThreshold";
+        public const string AlphaClipThresholdDepthPrepassSlotName = "AlphaClipThresholdDepthPrepass";
+        public const string AlphaClipThresholdDepthPostpassSlotName = "AlphaClipThresholdDepthPrepass";
         public const string AnisotropySlotName = "Anisotropy";
         public const string PositionName = "Position";
 
@@ -51,7 +53,9 @@ namespace UnityEditor.ShaderGraph
         public const int OcclusionSlotId = 15;
         public const int AlphaSlotId = 16;
         public const int AlphaThresholdSlotId = 17;
-        public const int AnisotropySlotId = 18;
+        public const int AlphaThresholdDepthPrepassSlotId = 18;
+        public const int AlphaThresholdDepthPostpassSlotId = 19;
+        public const int AnisotropySlotId = 20;
 
         public enum MaterialType
         {
@@ -86,15 +90,17 @@ namespace UnityEditor.ShaderGraph
             Occlusion = 1 << OcclusionSlotId,
             Alpha = 1 << AlphaSlotId,
             AlphaThreshold = 1 << AlphaThresholdSlotId,
+            AlphaThresholdDepthPrepass = 1 << AlphaThresholdDepthPrepassSlotId,
+            AlphaThresholdDepthPostpass = 1 << AlphaThresholdDepthPostpassSlotId,
             Anisotropy = 1 << AnisotropySlotId,
         }
 
-        const SlotMask StandardSlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.BentNormal | SlotMask.CoatMask | SlotMask.Emission | SlotMask.Metallic | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaThreshold;
-        const SlotMask SubsurfaceScatteringSlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.BentNormal | SlotMask.SubsurfaceMask | SlotMask.Thickness | SlotMask.DiffusionProfile | SlotMask.CoatMask | SlotMask.Emission | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaThreshold;
-        const SlotMask AnisotropySlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.BentNormal | SlotMask.Tangent | SlotMask.Anisotropy | SlotMask.CoatMask | SlotMask.Emission | SlotMask.Metallic | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaThreshold;
-        const SlotMask IridescenceSlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.BentNormal | SlotMask.IridescenceMask | SlotMask.IridescenceLayerThickness | SlotMask.CoatMask | SlotMask.Emission | SlotMask.Metallic | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaThreshold;
-        const SlotMask SpecularColorSlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.BentNormal | SlotMask.Specular | SlotMask.CoatMask | SlotMask.Emission | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaThreshold;
-        const SlotMask TranslucentSlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.BentNormal | SlotMask.Thickness | SlotMask.DiffusionProfile | SlotMask.CoatMask | SlotMask.Emission | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaThreshold;
+        const SlotMask StandardSlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.BentNormal | SlotMask.CoatMask | SlotMask.Emission | SlotMask.Metallic | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaThreshold | SlotMask.AlphaThresholdDepthPrepass | SlotMask.AlphaThresholdDepthPostpass;
+        const SlotMask SubsurfaceScatteringSlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.BentNormal | SlotMask.SubsurfaceMask | SlotMask.Thickness | SlotMask.DiffusionProfile | SlotMask.CoatMask | SlotMask.Emission | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaThreshold | SlotMask.AlphaThresholdDepthPrepass | SlotMask.AlphaThresholdDepthPostpass;
+        const SlotMask AnisotropySlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.BentNormal | SlotMask.Tangent | SlotMask.Anisotropy | SlotMask.CoatMask | SlotMask.Emission | SlotMask.Metallic | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaThreshold | SlotMask.AlphaThresholdDepthPrepass | SlotMask.AlphaThresholdDepthPostpass;
+        const SlotMask IridescenceSlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.BentNormal | SlotMask.IridescenceMask | SlotMask.IridescenceLayerThickness | SlotMask.CoatMask | SlotMask.Emission | SlotMask.Metallic | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaThreshold | SlotMask.AlphaThresholdDepthPrepass | SlotMask.AlphaThresholdDepthPostpass;
+        const SlotMask SpecularColorSlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.BentNormal | SlotMask.Specular | SlotMask.CoatMask | SlotMask.Emission | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaThreshold | SlotMask.AlphaThresholdDepthPrepass | SlotMask.AlphaThresholdDepthPostpass;
+        const SlotMask TranslucentSlotMask = SlotMask.Position | SlotMask.Albedo | SlotMask.Normal | SlotMask.BentNormal | SlotMask.Thickness | SlotMask.DiffusionProfile | SlotMask.CoatMask | SlotMask.Emission | SlotMask.Smoothness | SlotMask.Occlusion | SlotMask.Alpha | SlotMask.AlphaThreshold | SlotMask.AlphaThresholdDepthPrepass | SlotMask.AlphaThresholdDepthPostpass;
 
         // This could also be a simple array. For now, catch any mismatched data.
         SlotMask GetActiveSlotMask()
@@ -131,54 +137,6 @@ namespace UnityEditor.ShaderGraph
         }
 
         [SerializeField]
-        MaterialType m_MaterialType;
-
-        public MaterialType materialType
-        {
-            get { return m_MaterialType; }
-            set
-            {
-                if (m_MaterialType == value)
-                    return;
-
-                m_MaterialType = value;
-                UpdateNodeAfterDeserialization();
-                Dirty(ModificationScope.Topological);
-            }
-        }
-
-        [SerializeField]
-        int m_DiffusionProfile;
-
-        public int diffusionProfile
-        {
-            get { return m_DiffusionProfile; }
-            set
-            {
-                if (m_DiffusionProfile == value)
-                    return;
-
-                m_DiffusionProfile = value;
-                Dirty(ModificationScope.Graph);
-            }
-        }
-
-
-        [SerializeField]
-        bool m_SSSTransmission;
-
-        public ToggleData sssTransmission
-        {
-            get { return new ToggleData(m_SSSTransmission); }
-            set
-            {
-                m_SSSTransmission = value.isOn;
-                UpdateNodeAfterDeserialization();
-                Dirty(ModificationScope.Topological);
-            }
-        }
-
-        [SerializeField]
         SurfaceType m_SurfaceType;
 
         public SurfaceType surfaceType
@@ -192,21 +150,6 @@ namespace UnityEditor.ShaderGraph
                 m_SurfaceType = value;
                 UpdateNodeAfterDeserialization();
                 Dirty(ModificationScope.Topological);
-            }
-        }
-
-        [SerializeField]
-        bool m_DrawBeforeRefraction;
-
-        public ToggleData drawBeforeRefraction
-        {
-            get { return new ToggleData(m_DrawBeforeRefraction); }
-            set
-            {
-                if (m_DrawBeforeRefraction == value.isOn)
-                    return;
-                m_DrawBeforeRefraction = value.isOn;
-                Dirty(ModificationScope.Graph);
             }
         }
 
@@ -257,6 +200,69 @@ namespace UnityEditor.ShaderGraph
         }
 
         [SerializeField]
+        bool m_DrawBeforeRefraction;
+
+        public ToggleData drawBeforeRefraction
+        {
+            get { return new ToggleData(m_DrawBeforeRefraction); }
+            set
+            {
+                if (m_DrawBeforeRefraction == value.isOn)
+                    return;
+                m_DrawBeforeRefraction = value.isOn;
+                Dirty(ModificationScope.Graph);
+            }
+        }
+
+        [SerializeField]
+        bool m_AlphaTest;
+
+        public ToggleData alphaTest
+        {
+            get { return new ToggleData(m_AlphaTest); }
+            set
+            {
+                if (m_AlphaTest == value.isOn)
+                    return;
+                m_AlphaTest = value.isOn;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
+            }
+        }
+
+        [SerializeField]
+        bool m_AlphaTestDepthPrepass;
+
+        public ToggleData alphaTestDepthPrepass
+        {
+            get { return new ToggleData(m_AlphaTestDepthPrepass); }
+            set
+            {
+                if (m_AlphaTestDepthPrepass == value.isOn)
+                    return;
+                m_AlphaTestDepthPrepass = value.isOn;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
+            }
+        }
+
+        [SerializeField]
+        bool m_AlphaTestDepthPostpass;
+
+        public ToggleData alphaTestDepthPostpass
+        {
+            get { return new ToggleData(m_AlphaTestDepthPostpass); }
+            set
+            {
+                if (m_AlphaTestDepthPostpass == value.isOn)
+                    return;
+                m_AlphaTestDepthPostpass = value.isOn;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
+            }
+        }
+
+        [SerializeField]
         bool m_BackThenFrontRendering;
 
         public ToggleData backThenFrontRendering
@@ -303,6 +309,37 @@ namespace UnityEditor.ShaderGraph
         }
 
         [SerializeField]
+        MaterialType m_MaterialType;
+
+        public MaterialType materialType
+        {
+            get { return m_MaterialType; }
+            set
+            {
+                if (m_MaterialType == value)
+                    return;
+
+                m_MaterialType = value;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
+            }
+        }
+
+        [SerializeField]
+        bool m_SSSTransmission;
+
+        public ToggleData sssTransmission
+        {
+            get { return new ToggleData(m_SSSTransmission); }
+            set
+            {
+                m_SSSTransmission = value.isOn;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
+            }
+        }
+
+        [SerializeField]
         bool m_ReceiveDecals;
 
         public ToggleData receiveDecals
@@ -313,6 +350,21 @@ namespace UnityEditor.ShaderGraph
                 if (m_ReceiveDecals == value.isOn)
                     return;
                 m_ReceiveDecals = value.isOn;
+                Dirty(ModificationScope.Graph);
+            }
+        }
+
+        [SerializeField]
+        bool m_EnergyConservingSpecular;
+
+        public ToggleData energyConservingSpecular
+        {
+            get { return new ToggleData(m_EnergyConservingSpecular); }
+            set
+            {
+                if (m_EnergyConservingSpecular == value.isOn)
+                    return;
+                m_EnergyConservingSpecular = value.isOn;
                 Dirty(ModificationScope.Graph);
             }
         }
@@ -378,37 +430,6 @@ namespace UnityEditor.ShaderGraph
         }
 
         [SerializeField]
-        bool m_EnergyConservingSpecular;
-
-        public ToggleData energyConservingSpecular
-        {
-            get { return new ToggleData(m_EnergyConservingSpecular); }
-            set
-            {
-                if (m_EnergyConservingSpecular == value.isOn)
-                    return;
-                m_EnergyConservingSpecular = value.isOn;
-                Dirty(ModificationScope.Graph);
-            }
-        }
-
-        [SerializeField]
-        UVChannel m_UVChannel;
-
-        public UVChannel uvChannel
-        {
-            get { return m_UVChannel; }
-            set
-            {
-                if (m_UVChannel == value)
-                    return;
-
-                m_UVChannel = value;
-                Dirty(ModificationScope.Graph);
-            }
-        }
-
-        [SerializeField]
         bool m_AlbedoAffectsEmissive;
 
         public ToggleData albedoAffectsEmissive
@@ -434,6 +455,22 @@ namespace UnityEditor.ShaderGraph
                 if (m_BentNormalSpecularOcclusion == value.isOn)
                     return;
                 m_BentNormalSpecularOcclusion = value.isOn;
+                Dirty(ModificationScope.Graph);
+            }
+        }
+
+        [SerializeField]
+        int m_DiffusionProfile;
+
+        public int diffusionProfile
+        {
+            get { return m_DiffusionProfile; }
+            set
+            {
+                if (m_DiffusionProfile == value)
+                    return;
+
+                m_DiffusionProfile = value;
                 Dirty(ModificationScope.Graph);
             }
         }
@@ -546,10 +583,20 @@ namespace UnityEditor.ShaderGraph
                 AddSlot(new Vector1MaterialSlot(AlphaSlotId, AlphaSlotName, AlphaSlotName, SlotType.Input, 1.0f, ShaderStageCapability.Fragment));
                 validSlots.Add(AlphaSlotId);
             }
-            if (MaterialTypeUsesSlotMask(SlotMask.AlphaThreshold))
+            if (MaterialTypeUsesSlotMask(SlotMask.AlphaThreshold) && alphaTest.isOn)
             {
                 AddSlot(new Vector1MaterialSlot(AlphaThresholdSlotId, AlphaClipThresholdSlotName, AlphaClipThresholdSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
                 validSlots.Add(AlphaThresholdSlotId);
+            }
+            if (MaterialTypeUsesSlotMask(SlotMask.AlphaThresholdDepthPrepass) && surfaceType == SurfaceType.Transparent && alphaTest.isOn && alphaTestDepthPrepass.isOn)
+            {
+                AddSlot(new Vector1MaterialSlot(AlphaThresholdDepthPrepassSlotId, AlphaClipThresholdDepthPrepassSlotName, AlphaClipThresholdDepthPrepassSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
+                validSlots.Add(AlphaThresholdDepthPrepassSlotId);
+            }
+            if (MaterialTypeUsesSlotMask(SlotMask.AlphaThresholdDepthPostpass) && surfaceType == SurfaceType.Transparent && alphaTest.isOn && alphaTestDepthPostpass.isOn)
+            {
+                AddSlot(new Vector1MaterialSlot(AlphaThresholdDepthPostpassSlotId, AlphaClipThresholdDepthPostpassSlotName, AlphaClipThresholdDepthPostpassSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
+                validSlots.Add(AlphaThresholdDepthPostpassSlotId);
             }
 
             RemoveSlotsNameNotMatching(validSlots, true);

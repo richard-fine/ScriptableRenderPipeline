@@ -475,6 +475,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         public List<string> StencilOverride;
         public List<string> RequiredFields;         // feeds into the dependency analysis
         public ShaderGraphRequirements requirements;
+        public bool BypassAlphaTest;
 
         // All these lists could probably be hashed to aid lookups.
         public bool VertexShaderUsesSlot(int slotId)
@@ -638,6 +639,13 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     foreach (var define in pass.ExtraDefines)
                         defines.AddShaderChunk(define);
                 }
+                if (pass.BypassAlphaTest)
+                {
+                    // These are both used for the same purpose, but let's make sure they are both defined in case something changes.
+                    defines.AddShaderChunk("#define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST");
+                    defines.AddShaderChunk("#define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST");
+                }
+
                 defines.AddGenerator(interpolatorDefines);
             }
 
@@ -826,17 +834,32 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             }
         }
 
-        public static SurfaceMaterialOptions BuildMaterialOptions(SurfaceType surfaceType, AlphaMode alphaMode, bool twoSided, bool beforeRefraction, int sortPriority)
+        public static SurfaceMaterialOptions BuildMaterialOptions(SurfaceType surfaceType, AlphaMode alphaMode, bool alphaTest, bool bypassAlphaTest, bool twoSided, bool beforeRefraction, int sortPriority)
         {
             SurfaceMaterialOptions materialOptions = new SurfaceMaterialOptions();
             if (surfaceType == SurfaceType.Opaque)
             {
                 materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
                 materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.Zero;
-                materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
+                if (alphaTest && bypassAlphaTest)
+                {
+                    materialOptions.zTest = SurfaceMaterialOptions.ZTest.Equal;
+                }
+                else
+                {
+                    materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
+                }
                 materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.On;
-                materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Geometry;
-                materialOptions.renderType = SurfaceMaterialOptions.RenderType.Opaque;
+                if (alphaTest)
+                {
+                    materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.AlphaTest;
+                    materialOptions.renderType = SurfaceMaterialOptions.RenderType.TransparentCutout;
+                }
+                else
+                {
+                    materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Geometry;
+                    materialOptions.renderType = SurfaceMaterialOptions.RenderType.Opaque;
+                }
             }
             else
             {

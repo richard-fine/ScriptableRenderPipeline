@@ -50,6 +50,7 @@ namespace UnityEditor.ShaderGraph
             Geometry,
             Transparent,
             Overlay,
+            AlphaTest
         }
 
         public enum RenderType
