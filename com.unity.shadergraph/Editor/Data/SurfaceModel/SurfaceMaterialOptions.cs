@@ -129,6 +129,11 @@ namespace UnityEditor.ShaderGraph
             builder.AppendLine("ZWrite {0}", zWrite);
         }
 
+        public void GetDepthClip(ShaderStringBuilder builder)
+        {
+            builder.AppendLine("ZClip [_ZClip]");
+        }
+
         public void GetDepthTest(ShaderStringBuilder builder)
         {
             builder.AppendLine("ZTest {0}", zTest);

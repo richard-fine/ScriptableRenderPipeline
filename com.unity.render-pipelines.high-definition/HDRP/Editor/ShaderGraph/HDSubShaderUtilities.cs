@@ -595,9 +595,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             var cullCode = new ShaderStringBuilder();
             var zTestCode = new ShaderStringBuilder();
             var zWriteCode = new ShaderStringBuilder();
+            var zClipCode = new ShaderStringBuilder();
             var stencilCode = new ShaderStringBuilder();
             var colorMaskCode = new ShaderStringBuilder();
-            HDSubShaderUtilities.BuildRenderStatesFromPassAndMaterialOptions(pass, materialOptions, blendCode, cullCode, zTestCode, zWriteCode, stencilCode, colorMaskCode);
+            HDSubShaderUtilities.BuildRenderStatesFromPassAndMaterialOptions(pass, materialOptions, blendCode, cullCode, zTestCode, zWriteCode, zClipCode, stencilCode, colorMaskCode);
 
             HDRPShaderStructs.AddRequiredFields(pass.RequiredFields, activeFields);
 
@@ -712,6 +713,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             namedFragments.Add("Culling", cullCode.ToString());
             namedFragments.Add("ZTest", zTestCode.ToString());
             namedFragments.Add("ZWrite", zWriteCode.ToString());
+            namedFragments.Add("ZClip", zClipCode.ToString());
             namedFragments.Add("Stencil", stencilCode.ToString());
             namedFragments.Add("ColorMask", colorMaskCode.ToString());
             namedFragments.Add("LOD", materialOptions.lod.ToString());
@@ -754,6 +756,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             ShaderStringBuilder cullCode,
             ShaderStringBuilder zTestCode,
             ShaderStringBuilder zWriteCode,
+            ShaderStringBuilder zClipCode,
             ShaderStringBuilder stencilCode,
             ShaderStringBuilder colorMaskCode)
         {
@@ -797,6 +800,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 materialOptions.GetDepthWrite(zWriteCode);
             }
+
+            // No point in an override for this.
+            materialOptions.GetDepthClip(zClipCode);
 
             if (pass.ColorMaskOverride != null)
             {

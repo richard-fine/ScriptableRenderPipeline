@@ -178,6 +178,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             LightMode = "ShadowCaster",
             TemplateName = "HDPBRPass.template",
             ShaderPassName = "SHADERPASS_SHADOWS",
+            BlendOverride = "Blend One Zero",
+            ZWriteOverride = "ZWrite On",
             ColorMaskOverride = "ColorMask 0",
             ExtraDefines = new List<string>()
             {
