@@ -855,18 +855,18 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                         materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
                         break;
                 }
+                materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
+                materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
+                materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
+                materialOptions.renderQueueOffset = sortPriority;
+                if (beforeRefraction)
+                {
+                    // This is certainly hacky, there is no queue entry for PreRefraction. Doing this to avoid completely flattening the queue to a integer, but perhaps it should be flattened.
+                    materialOptions.renderQueueOffset -= HDRenderQueue.Priority.Transparent - HDRenderQueue.Priority.PreRefraction;
+                }
+                materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
             }
 
-            materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
-            materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
-            materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
-            materialOptions.renderQueueOffset = sortPriority;
-            if (beforeRefraction)
-            {
-                // This is certainly hacky, there is no queue entry for PreRefraction. Doing this to avoid completely flattening the queue to a integer, but perhaps it should be flattened.
-                materialOptions.renderQueueOffset -= HDRenderQueue.Priority.Transparent - HDRenderQueue.Priority.PreRefraction;
-            }
-            materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
             materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
 
             return materialOptions;
