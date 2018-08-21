@@ -317,6 +317,11 @@ $include("SharedCode.template.hlsl")
 
         builtinData.depthOffset =               0.0;                        // ApplyPerPixelDisplacement(input, V, layerTexCoord, blendMasks); #ifdef _DEPTHOFFSET_ON : ApplyDepthOffsetPositionInput(V, depthOffset, GetWorldToHClipMatrix(), posInput);
 
+#if (SHADERPASS == SHADERPASS_DISTORTION)
+    builtinData.distortion = float2(surfaceDescription.DistortionX, surfaceDescription.DistortionY);
+    builtinData.distortionBlur = surfaceDescription.DistortionBlur;
+#endif
+
         PostInitBuiltinData(V, posInput, surfaceData, builtinData);
     }
 

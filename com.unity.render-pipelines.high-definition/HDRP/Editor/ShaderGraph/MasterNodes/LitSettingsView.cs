@@ -32,14 +32,17 @@ namespace UnityEditor.ShaderGraph.Drawing
 
             if (m_Node.surfaceType == SurfaceType.Transparent)
             {
-                ps.Add(new PropertyRow(new Label("    Blend Mode")), (row) =>
+                if (!m_Node.HasRefraction())
                 {
-                    row.Add(new EnumField(AlphaMode.Additive), (field) =>
+                    ps.Add(new PropertyRow(new Label("    Blend Mode")), (row) =>
                     {
-                        field.value = m_Node.alphaMode;
-                        field.OnValueChanged(ChangeBlendMode);
+                        row.Add(new EnumField(AlphaMode.Additive), (field) =>
+                        {
+                            field.value = m_Node.alphaMode;
+                            field.OnValueChanged(ChangeBlendMode);
+                        });
                     });
-                });
+                }
 
                 ps.Add(new PropertyRow(new Label("    Blend Preserves Specular")), (row) =>
                 {
@@ -90,6 +93,35 @@ namespace UnityEditor.ShaderGraph.Drawing
                             });
                         });
                     }
+                }
+
+                ps.Add(new PropertyRow(new Label("    Distortion")), (row) =>
+                {
+                    row.Add(new Toggle(), (toggle) =>
+                    {
+                        toggle.value = m_Node.distortion.isOn;
+                        toggle.OnToggleChanged(ChangeDistortion);
+                    });
+                });
+
+                if (m_Node.distortion.isOn)
+                {
+                    ps.Add(new PropertyRow(new Label("        Mode")), (row) =>
+                    {
+                        row.Add(new EnumField(DistortionMode.Add), (field) =>
+                        {
+                            field.value = m_Node.distortionMode;
+                            field.OnValueChanged(ChangeDistortionMode);
+                        });
+                    });
+                    ps.Add(new PropertyRow(new Label("        Depth Test")), (row) =>
+                    {
+                        row.Add(new Toggle(), (toggle) =>
+                        {
+                            toggle.value = m_Node.distortionDepthTest.isOn;
+                            toggle.OnToggleChanged(ChangeDistortionDepthTest);
+                        });
+                    });
                 }
 
                 ps.Add(new PropertyRow(new Label("    Back Then Front Rendering")), (row) =>
@@ -325,6 +357,31 @@ namespace UnityEditor.ShaderGraph.Drawing
 
             m_Node.owner.owner.RegisterCompleteObjectUndo("Projection Model Change");
             m_Node.projectionModel = (ScreenSpaceLighting.PickableProjectionModel)evt.newValue;
+        }
+
+        void ChangeDistortion(ChangeEvent<bool> evt)
+        {
+            m_Node.owner.owner.RegisterCompleteObjectUndo("Distortion Change");
+            ToggleData td = m_Node.distortion;
+            td.isOn = evt.newValue;
+            m_Node.distortion = td;
+        }
+
+        void ChangeDistortionMode(ChangeEvent<Enum> evt)
+        {
+            if (Equals(m_Node.distortionMode, evt.newValue))
+                return;
+
+            m_Node.owner.owner.RegisterCompleteObjectUndo("Distortion Mode Change");
+            m_Node.distortionMode = (DistortionMode)evt.newValue;
+        }
+
+        void ChangeDistortionDepthTest(ChangeEvent<bool> evt)
+        {
+            m_Node.owner.owner.RegisterCompleteObjectUndo("Distortion Depth Test Change");
+            ToggleData td = m_Node.distortionDepthTest;
+            td.isOn = evt.newValue;
+            m_Node.distortionDepthTest = td;
         }
 
         void ChangeBackThenFrontRendering(ChangeEvent<bool> evt)

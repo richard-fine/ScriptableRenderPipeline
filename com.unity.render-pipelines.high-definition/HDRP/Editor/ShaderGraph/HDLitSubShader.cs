@@ -256,7 +256,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             PixelShaderSlots = new List<int>()
             {
                 LitMasterNode.AlphaSlotId,
-                LitMasterNode.AlphaThresholdSlotId
+                LitMasterNode.AlphaThresholdSlotId,
+                LitMasterNode.DistortionXSlotId,
+                LitMasterNode.DistortionYSlotId,
+                LitMasterNode.DistortionBlurSlotId,
             },
             VertexShaderSlots = new List<int>()
             {
@@ -757,7 +760,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 bool transparent = !opaque;
                 bool velocity = masterNode.motionVectors.isOn;
 
-                bool distortionActive = false;
+                bool distortionActive = transparent && masterNode.distortion.isOn;
                 bool transparentBackfaceActive = transparent && masterNode.backThenFrontRendering.isOn;
                 bool transparentDepthPrepassActive = transparent && masterNode.alphaTest.isOn && masterNode.alphaTestDepthPrepass.isOn;
                 bool transparentDepthPostpassActive = transparent && masterNode.alphaTest.isOn && masterNode.alphaTestDepthPostpass.isOn;
@@ -778,6 +781,26 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
                 if (distortionActive)
                 {
+                    // Again, all of this needs to be completely encapsulated in the pass itself.
+                    if (masterNode.distortionDepthTest.isOn)
+                    {
+                        m_PassDistortion.ZTestOverride = "ZTest LEqual";
+                    }
+                    else
+                    {
+                        m_PassDistortion.ZTestOverride = "ZTest Always";
+                    }
+                    if (masterNode.distortionMode == DistortionMode.Add)
+                    {
+                        m_PassDistortion.BlendOverride = "Blend One One, One One";
+                        m_PassDistortion.BlendOpOverride = "BlendOp Add, Max";
+                    }
+                    else if(masterNode.distortionMode == DistortionMode.Multiply)
+                    {
+                        m_PassDistortion.BlendOverride = "Blend DstColor Zero, DstAlpha Zero";
+                        m_PassDistortion.BlendOpOverride = "BlendOp Add, Add";
+                    }
+
                     GenerateShaderPassLit(masterNode, m_PassDistortion, mode, subShader, sourceAssetDependencyPaths);
                 }
 

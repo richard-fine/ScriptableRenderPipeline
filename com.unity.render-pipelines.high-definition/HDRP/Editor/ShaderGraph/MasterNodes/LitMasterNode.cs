@@ -40,6 +40,9 @@ namespace UnityEditor.ShaderGraph
         public const string RefractionIndexSlotName = "RefractionIndex";
         public const string RefractionColorSlotName = "RefractionColor";
         public const string RefractionDistanceSlotName = "RefractionDistance";
+        public const string DistortionXSlotName = "DistortionX";
+        public const string DistortionYSlotName = "DistortionY";
+        public const string DistortionBlurSlotName = "DistortionBlur";
 
         public const int PositionSlotId = 0;
         public const int AlbedoSlotId = 1;
@@ -67,6 +70,9 @@ namespace UnityEditor.ShaderGraph
         public const int RefractionIndexSlotId = 23;
         public const int RefractionColorSlotId = 24;
         public const int RefractionDistanceSlotId = 25;
+        public const int DistortionXSlotId = 26;
+        public const int DistortionYSlotId = 27;
+        public const int DistortionBlurSlotId = 28;
 
         public enum MaterialType
         {
@@ -257,6 +263,54 @@ namespace UnityEditor.ShaderGraph
                 m_ProjectionModel = value;
                 UpdateNodeAfterDeserialization();
                 Dirty(ModificationScope.Topological);
+            }
+        }
+
+        [SerializeField]
+        bool m_Distortion;
+
+        public ToggleData distortion
+        {
+            get { return new ToggleData(m_Distortion); }
+            set
+            {
+                if (m_Distortion == value.isOn)
+                    return;
+                m_Distortion = value.isOn;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
+            }
+        }
+
+        [SerializeField]
+        DistortionMode m_DistortionMode;
+
+        public DistortionMode distortionMode
+        {
+            get { return m_DistortionMode; }
+            set
+            {
+                if (m_DistortionMode == value)
+                    return;
+
+                m_DistortionMode = value;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
+            }
+        }
+
+        [SerializeField]
+        bool m_DistortionDepthTest;
+
+        public ToggleData distortionDepthTest
+        {
+            get { return new ToggleData(m_DistortionDepthTest); }
+            set
+            {
+                if (m_DistortionDepthTest == value.isOn)
+                    return;
+                m_DistortionDepthTest = value.isOn;
+                Dirty(ModificationScope.Graph);
             }
         }
 
@@ -555,6 +609,11 @@ namespace UnityEditor.ShaderGraph
             return (surfaceType == SurfaceType.Transparent && !drawBeforeRefraction.isOn && refractionModel != ScreenSpaceLighting.RefractionModel.None);
         }
 
+        public bool HasDistortion()
+        {
+            return (surfaceType == SurfaceType.Transparent && distortion.isOn);
+        }
+
         public sealed override void UpdateNodeAfterDeserialization()
         {
             base.UpdateNodeAfterDeserialization();
@@ -684,6 +743,17 @@ namespace UnityEditor.ShaderGraph
 
                 AddSlot(new Vector1MaterialSlot(RefractionDistanceSlotId, RefractionDistanceSlotName, RefractionDistanceSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
                 validSlots.Add(RefractionDistanceSlotId);
+            }
+            if (HasDistortion())
+            {
+                AddSlot(new Vector1MaterialSlot(DistortionXSlotId, DistortionXSlotName, DistortionXSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
+                validSlots.Add(DistortionXSlotId);
+
+                AddSlot(new Vector1MaterialSlot(DistortionYSlotId, DistortionYSlotName, DistortionYSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
+                validSlots.Add(DistortionYSlotId);
+
+                AddSlot(new Vector1MaterialSlot(DistortionBlurSlotId, DistortionBlurSlotName, DistortionBlurSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
+                validSlots.Add(DistortionBlurSlotId);
             }
 
             RemoveSlotsNameNotMatching(validSlots, true);
