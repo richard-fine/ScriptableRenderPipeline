@@ -6,6 +6,7 @@ using UnityEditor.ShaderGraph.Drawing;
 using UnityEditor.ShaderGraph.Drawing.Controls;
 using UnityEngine;
 using UnityEngine.Experimental.UIElements;
+using UnityEngine.Experimental.Rendering.HDPipeline;
 
 namespace UnityEditor.ShaderGraph
 {
@@ -36,6 +37,9 @@ namespace UnityEditor.ShaderGraph
         public const string PositionName = "Position";
         public const string SpecularAAScreenSpaceVarianceSlotName = "SpecularAAScreenSpaceVariance";
         public const string SpecularAAThresholdSlotName = "SpecularAAThreshold";
+        public const string RefractionIndexSlotName = "RefractionIndex";
+        public const string RefractionColorSlotName = "RefractionColor";
+        public const string RefractionDistanceSlotName = "RefractionDistance";
 
         public const int PositionSlotId = 0;
         public const int AlbedoSlotId = 1;
@@ -60,6 +64,9 @@ namespace UnityEditor.ShaderGraph
         public const int AnisotropySlotId = 20;
         public const int SpecularAAScreenSpaceVarianceSlotId = 21;
         public const int SpecularAAThresholdSlotId = 22;
+        public const int RefractionIndexSlotId = 23;
+        public const int RefractionColorSlotId = 24;
+        public const int RefractionDistanceSlotId = 25;
 
         public enum MaterialType
         {
@@ -214,7 +221,42 @@ namespace UnityEditor.ShaderGraph
                 if (m_DrawBeforeRefraction == value.isOn)
                     return;
                 m_DrawBeforeRefraction = value.isOn;
-                Dirty(ModificationScope.Graph);
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
+            }
+        }
+
+        [SerializeField]
+        ScreenSpaceLighting.RefractionModel m_RefractionModel;
+
+        public ScreenSpaceLighting.RefractionModel refractionModel
+        {
+            get { return m_RefractionModel; }
+            set
+            {
+                if (m_RefractionModel == value)
+                    return;
+
+                m_RefractionModel = value;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
+            }
+        }
+
+        [SerializeField]
+        ScreenSpaceLighting.PickableProjectionModel m_ProjectionModel;
+
+        public ScreenSpaceLighting.PickableProjectionModel projectionModel
+        {
+            get { return m_ProjectionModel; }
+            set
+            {
+                if (m_ProjectionModel == value)
+                    return;
+
+                m_ProjectionModel = value;
+                UpdateNodeAfterDeserialization();
+                Dirty(ModificationScope.Topological);
             }
         }
 
@@ -508,6 +550,11 @@ namespace UnityEditor.ShaderGraph
             get { return "https://github.com/Unity-Technologies/ShaderGraph/wiki/PBR-Master-Node"; }
         }
 
+        public bool HasRefraction()
+        {
+            return (surfaceType == SurfaceType.Transparent && !drawBeforeRefraction.isOn && refractionModel != ScreenSpaceLighting.RefractionModel.None);
+        }
+
         public sealed override void UpdateNodeAfterDeserialization()
         {
             base.UpdateNodeAfterDeserialization();
@@ -549,7 +596,7 @@ namespace UnityEditor.ShaderGraph
                 AddSlot(new Vector1MaterialSlot(SubsurfaceMaskSlotId, SubsurfaceMaskSlotName, SubsurfaceMaskSlotName, SlotType.Input, 1.0f, ShaderStageCapability.Fragment));
                 validSlots.Add(SubsurfaceMaskSlotId);
             }
-            if (MaterialTypeUsesSlotMask(SlotMask.Thickness) && (sssTransmission.isOn || materialType == MaterialType.Translucent))
+            if ((MaterialTypeUsesSlotMask(SlotMask.Thickness) && (sssTransmission.isOn || materialType == MaterialType.Translucent)) || HasRefraction())
             {
                 AddSlot(new Vector1MaterialSlot(ThicknessSlotId, ThicknessSlotName, ThicknessSlotName, SlotType.Input, 1.0f, ShaderStageCapability.Fragment));
                 validSlots.Add(ThicknessSlotId);
@@ -626,6 +673,17 @@ namespace UnityEditor.ShaderGraph
 
                 AddSlot(new Vector1MaterialSlot(SpecularAAThresholdSlotId, SpecularAAThresholdSlotName, SpecularAAThresholdSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
                 validSlots.Add(SpecularAAThresholdSlotId);
+            }
+            if (HasRefraction())
+            {
+                AddSlot(new Vector1MaterialSlot(RefractionIndexSlotId, RefractionIndexSlotName, RefractionIndexSlotName, SlotType.Input, 1.0f, ShaderStageCapability.Fragment));
+                validSlots.Add(RefractionIndexSlotId);
+
+                AddSlot(new ColorRGBMaterialSlot(RefractionColorSlotId, RefractionColorSlotName, RefractionColorSlotName, SlotType.Input, Color.white, ColorMode.Default, ShaderStageCapability.Fragment));
+                validSlots.Add(RefractionColorSlotId);
+
+                AddSlot(new Vector1MaterialSlot(RefractionDistanceSlotId, RefractionDistanceSlotName, RefractionDistanceSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
+                validSlots.Add(RefractionDistanceSlotId);
             }
 
             RemoveSlotsNameNotMatching(validSlots, true);

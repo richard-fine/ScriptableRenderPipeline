@@ -865,7 +865,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                                                                   AlphaMode alphaMode,
                                                                   bool bypassAlphaTest,
                                                                   bool twoSided,
-                                                                  bool backThenFront)
+                                                                  bool backThenFront,
+                                                                  bool refraction)
         {
             SurfaceMaterialOptions materialOptions = new SurfaceMaterialOptions();
             if (surfaceType == SurfaceType.Opaque)
@@ -884,25 +885,33 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             }
             else
             {
-                switch (alphaMode)
+                if (refraction)
                 {
-                    case AlphaMode.Alpha:
-                        materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
-                        materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
-                        break;
-                    case AlphaMode.Additive:
-                        materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
-                        materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.One;
-                        break;
-                    case AlphaMode.Premultiply:
-                        materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
-                        materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
-                        break;
-                    // This isn't supported in HDRP.
-                    case AlphaMode.Multiply:
-                        materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
-                        materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
-                        break;
+                    materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
+                    materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
+                }
+                else
+                {
+                    switch (alphaMode)
+                    {
+                        case AlphaMode.Alpha:
+                            materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
+                            materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
+                            break;
+                        case AlphaMode.Additive:
+                            materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
+                            materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.One;
+                            break;
+                        case AlphaMode.Premultiply:
+                            materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
+                            materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
+                            break;
+                        // This isn't supported in HDRP.
+                        case AlphaMode.Multiply:
+                            materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
+                            materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
+                            break;
+                    }
                 }
                 materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
                 materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;

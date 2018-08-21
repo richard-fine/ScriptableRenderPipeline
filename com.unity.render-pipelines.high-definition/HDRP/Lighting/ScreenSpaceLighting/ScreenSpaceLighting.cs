@@ -13,6 +13,12 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             Sphere = 2
         };
 
+        public enum PickableProjectionModel
+        {
+            Proxy = 0,
+            HiZ = 1,
+        };
+
         [GenerateHLSL]
         public enum ProjectionModel
         {

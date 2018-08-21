@@ -58,6 +58,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 LitMasterNode.AnisotropySlotId,
                 LitMasterNode.SpecularAAScreenSpaceVarianceSlotId,
                 LitMasterNode.SpecularAAThresholdSlotId,
+                LitMasterNode.RefractionIndexSlotId,
+                LitMasterNode.RefractionColorSlotId,
+                LitMasterNode.RefractionDistanceSlotId,
             },
             VertexShaderSlots = new List<int>()
             {
@@ -115,6 +118,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 LitMasterNode.AnisotropySlotId,
                 LitMasterNode.SpecularAAScreenSpaceVarianceSlotId,
                 LitMasterNode.SpecularAAThresholdSlotId,
+                LitMasterNode.RefractionIndexSlotId,
+                LitMasterNode.RefractionColorSlotId,
+                LitMasterNode.RefractionDistanceSlotId,
             },
             VertexShaderSlots = new List<int>()
             {
@@ -343,6 +349,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 LitMasterNode.AnisotropySlotId,
                 LitMasterNode.SpecularAAScreenSpaceVarianceSlotId,
                 LitMasterNode.SpecularAAThresholdSlotId,
+                LitMasterNode.RefractionIndexSlotId,
+                LitMasterNode.RefractionColorSlotId,
+                LitMasterNode.RefractionDistanceSlotId,
             },
             VertexShaderSlots = new List<int>()
             {
@@ -402,6 +411,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 LitMasterNode.AnisotropySlotId,
                 LitMasterNode.SpecularAAScreenSpaceVarianceSlotId,
                 LitMasterNode.SpecularAAThresholdSlotId,
+                LitMasterNode.RefractionIndexSlotId,
+                LitMasterNode.RefractionColorSlotId,
+                LitMasterNode.RefractionDistanceSlotId,
             },
             VertexShaderSlots = new List<int>()
             {
@@ -585,6 +597,40 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 activeFields.Add("AlbedoAffectsEmissive");
             }
 
+            if (masterNode.HasRefraction())
+            {
+                activeFields.Add("Refraction");
+                switch (masterNode.refractionModel)
+                {
+                    case ScreenSpaceLighting.RefractionModel.Plane:
+                        activeFields.Add("RefractionPlane");
+                        break;
+
+                    case ScreenSpaceLighting.RefractionModel.Sphere:
+                        activeFields.Add("RefractionSphere");
+                        break;
+
+                    default:
+                        UnityEngine.Debug.LogError("Unknown refraction model: " + masterNode.refractionModel);
+                        break;
+                }
+
+                switch (masterNode.projectionModel)
+                {
+                    case ScreenSpaceLighting.PickableProjectionModel.Proxy:
+                        activeFields.Add("RefractionSSRayProxy");
+                        break;
+
+                    case ScreenSpaceLighting.PickableProjectionModel.HiZ:
+                        activeFields.Add("RefractionSSRayHiZ");
+                        break;
+
+                    default:
+                        UnityEngine.Debug.LogError("Unknown projection model: " + masterNode.projectionModel);
+                        break;
+                }
+            }
+
             if (masterNode.IsSlotConnected(LitMasterNode.BentNormalSlotId) && pass.PixelShaderUsesSlot(LitMasterNode.BentNormalSlotId))
             {
                 activeFields.Add("BentNormal");
@@ -627,7 +673,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             if (mode == GenerationMode.ForReals || pass.UseInPreview)
             {
-                SurfaceMaterialOptions materialOptions = HDSubShaderUtilities.BuildMaterialOptions(masterNode.surfaceType, masterNode.alphaMode, pass.AllowBypassAlphaTest && masterNode.alphaTest.isOn, masterNode.doubleSidedMode != DoubleSidedMode.Disabled, pass.AllowBypassAlphaTest && masterNode.backThenFrontRendering.isOn);
+                SurfaceMaterialOptions materialOptions = HDSubShaderUtilities.BuildMaterialOptions(masterNode.surfaceType, masterNode.alphaMode, pass.AllowBypassAlphaTest && masterNode.alphaTest.isOn, masterNode.doubleSidedMode != DoubleSidedMode.Disabled, pass.AllowBypassAlphaTest && masterNode.backThenFrontRendering.isOn, masterNode.HasRefraction());
 
                 UpdateOverrides(masterNode, ref pass);
 

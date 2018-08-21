@@ -68,6 +68,30 @@ namespace UnityEditor.ShaderGraph.Drawing
                     });
                 });
 
+                if (!m_Node.drawBeforeRefraction.isOn)
+                {
+                    ps.Add(new PropertyRow(new Label("    Refraction Model")), (row) =>
+                    {
+                        row.Add(new EnumField(ScreenSpaceLighting.RefractionModel.None), (field) =>
+                        {
+                            field.value = m_Node.refractionModel;
+                            field.OnValueChanged(ChangeRefractionModel);
+                        });
+                    });
+
+                    if (m_Node.refractionModel != ScreenSpaceLighting.RefractionModel.None)
+                    {
+                        ps.Add(new PropertyRow(new Label("        Projection Model")), (row) =>
+                        {
+                            row.Add(new EnumField(ScreenSpaceLighting.PickableProjectionModel.Proxy), (field) =>
+                            {
+                                field.value = m_Node.projectionModel;
+                                field.OnValueChanged(ChangeProjectionModel);
+                            });
+                        });
+                    }
+                }
+
                 ps.Add(new PropertyRow(new Label("    Back Then Front Rendering")), (row) =>
                 {
                     row.Add(new Toggle(), (toggle) =>
@@ -283,6 +307,24 @@ namespace UnityEditor.ShaderGraph.Drawing
             ToggleData td = m_Node.drawBeforeRefraction;
             td.isOn = evt.newValue;
             m_Node.drawBeforeRefraction = td;
+        }
+
+        void ChangeRefractionModel(ChangeEvent<Enum> evt)
+        {
+            if (Equals(m_Node.refractionModel, evt.newValue))
+                return;
+
+            m_Node.owner.owner.RegisterCompleteObjectUndo("Refraction Model Change");
+            m_Node.refractionModel = (ScreenSpaceLighting.RefractionModel)evt.newValue;
+        }
+
+        void ChangeProjectionModel(ChangeEvent<Enum> evt)
+        {
+            if (Equals(m_Node.projectionModel, evt.newValue))
+                return;
+
+            m_Node.owner.owner.RegisterCompleteObjectUndo("Projection Model Change");
+            m_Node.projectionModel = (ScreenSpaceLighting.PickableProjectionModel)evt.newValue;
         }
 
         void ChangeBackThenFrontRendering(ChangeEvent<bool> evt)
