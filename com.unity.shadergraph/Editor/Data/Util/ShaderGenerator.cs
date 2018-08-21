@@ -829,6 +829,24 @@ namespace UnityEditor.ShaderGraph
             return res;
         }
 
+        public static SurfaceMaterialTags BuildMaterialTags(SurfaceType surfaceType)
+        {
+            SurfaceMaterialTags materialTags = new SurfaceMaterialTags();
+
+            if (surfaceType == SurfaceType.Opaque)
+            {
+                materialTags.renderQueue = SurfaceMaterialTags.RenderQueue.Geometry;
+                materialTags.renderType = SurfaceMaterialTags.RenderType.Opaque;
+            }
+            else
+            {
+                materialTags.renderQueue = SurfaceMaterialTags.RenderQueue.Transparent;
+                materialTags.renderType = SurfaceMaterialTags.RenderType.Transparent;
+            }
+
+            return materialTags;
+        }
+
         public static SurfaceMaterialOptions GetMaterialOptions(SurfaceType surfaceType, AlphaMode alphaMode, bool twoSided)
         {
             var materialOptions = new SurfaceMaterialOptions();
@@ -840,8 +858,6 @@ namespace UnityEditor.ShaderGraph
                     materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
                     materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
                     materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.On;
-                    materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Geometry;
-                    materialOptions.renderType = SurfaceMaterialOptions.RenderType.Opaque;
                     break;
                 case SurfaceType.Transparent:
                     switch (alphaMode)
@@ -852,8 +868,6 @@ namespace UnityEditor.ShaderGraph
                             materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
                             materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
                             materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
-                            materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
-                            materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
                             break;
                         case AlphaMode.Premultiply:
                             materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
@@ -861,8 +875,6 @@ namespace UnityEditor.ShaderGraph
                             materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
                             materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
                             materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
-                            materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
-                            materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
                             break;
                         case AlphaMode.Additive:
                             materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
@@ -870,18 +882,14 @@ namespace UnityEditor.ShaderGraph
                             materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
                             materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
                             materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
-                            materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
-                            materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
                             break;
-                        //case AlphaMode.Multiply:
-                        //    materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.DstColor;
-                        //    materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.Zero;
-                        //    materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
-                        //    materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
-                        //    materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
-                        //    materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
-                        //    materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
-                        //    break;
+                        case AlphaMode.Multiply:
+                            materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.DstColor;
+                            materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.Zero;
+                            materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
+                            materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
+                            materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
+                            break;
                     }
                     break;
             }

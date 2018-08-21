@@ -201,14 +201,16 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             subShader.AddShaderChunk("{", true);
             subShader.Indent();
             {
-                SurfaceMaterialOptions materialOptions = HDSubShaderUtilities.BuildMaterialOptions(masterNode.surfaceType, masterNode.alphaMode, false, false, masterNode.twoSided.isOn, false, 0);
-
+                // Options still need to be added to master node - pre-refraction, sort priority...
+                SurfaceMaterialTags materialTags = HDSubShaderUtilities.BuildMaterialTags(masterNode.surfaceType, false, false, 0);
                 // Add tags at the SubShader level
                 {
                     var tagsVisitor = new ShaderStringBuilder();
-                    materialOptions.GetTags(tagsVisitor);
+                    materialTags.GetTags(tagsVisitor);
                     subShader.AddShaderChunk(tagsVisitor.ToString(), false);
                 }
+
+                SurfaceMaterialOptions materialOptions = HDSubShaderUtilities.BuildMaterialOptions(masterNode.surfaceType, masterNode.alphaMode, false, masterNode.twoSided.isOn, false);
 
                 // generate the necessary shader passes
 //                bool opaque = (masterNode.surfaceType == SurfaceType.Opaque);

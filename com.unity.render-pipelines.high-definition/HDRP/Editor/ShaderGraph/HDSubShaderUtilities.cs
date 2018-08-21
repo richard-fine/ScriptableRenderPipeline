@@ -475,7 +475,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         public List<string> StencilOverride;
         public List<string> RequiredFields;         // feeds into the dependency analysis
         public ShaderGraphRequirements requirements;
-        public bool BypassAlphaTest;
+        public bool AllowBypassAlphaTest;
+        public bool AllowBackThenFrontRendering;
+        public bool DynamicStencilForSplitLighting;
+        public bool UseInPreview;
 
         // All these lists could probably be hashed to aid lookups.
         public bool VertexShaderUsesSlot(int slotId)
@@ -639,13 +642,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     foreach (var define in pass.ExtraDefines)
                         defines.AddShaderChunk(define);
                 }
-                if (pass.BypassAlphaTest)
-                {
-                    // These are both used for the same purpose, but let's make sure they are both defined in case something changes.
-                    defines.AddShaderChunk("#define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST");
-                    defines.AddShaderChunk("#define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST");
-                }
-
                 defines.AddGenerator(interpolatorDefines);
             }
 
@@ -834,14 +830,49 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             }
         }
 
-        public static SurfaceMaterialOptions BuildMaterialOptions(SurfaceType surfaceType, AlphaMode alphaMode, bool alphaTest, bool bypassAlphaTest, bool twoSided, bool beforeRefraction, int sortPriority)
+        public static SurfaceMaterialTags BuildMaterialTags(SurfaceType surfaceType, bool alphaTest, bool preRefraction, int sortPriority)
+        {
+            SurfaceMaterialTags materialTags = new SurfaceMaterialTags();
+
+            if (surfaceType == SurfaceType.Opaque)
+            {
+                if (alphaTest)
+                {
+                    materialTags.renderQueue = SurfaceMaterialTags.RenderQueue.AlphaTest;
+                    materialTags.renderType = SurfaceMaterialTags.RenderType.TransparentCutout;
+                }
+                else
+                {
+                    materialTags.renderQueue = SurfaceMaterialTags.RenderQueue.Geometry;
+                    materialTags.renderType = SurfaceMaterialTags.RenderType.Opaque;
+                }
+            }
+            else
+            {
+                materialTags.renderQueue = SurfaceMaterialTags.RenderQueue.Transparent;
+                materialTags.renderQueueOffset = sortPriority;
+                if (preRefraction)
+                {
+                    materialTags.renderQueueOffset -= HDRenderQueue.Priority.Transparent - HDRenderQueue.Priority.PreRefraction;
+                }
+                materialTags.renderType = SurfaceMaterialTags.RenderType.Transparent;
+            }
+
+            return materialTags;
+        }
+
+        public static SurfaceMaterialOptions BuildMaterialOptions(SurfaceType surfaceType,
+                                                                  AlphaMode alphaMode,
+                                                                  bool bypassAlphaTest,
+                                                                  bool twoSided,
+                                                                  bool backThenFront)
         {
             SurfaceMaterialOptions materialOptions = new SurfaceMaterialOptions();
             if (surfaceType == SurfaceType.Opaque)
             {
                 materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
                 materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.Zero;
-                if (alphaTest && bypassAlphaTest)
+                if (bypassAlphaTest)
                 {
                     materialOptions.zTest = SurfaceMaterialOptions.ZTest.Equal;
                 }
@@ -850,16 +881,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
                 }
                 materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.On;
-                if (alphaTest)
-                {
-                    materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.AlphaTest;
-                    materialOptions.renderType = SurfaceMaterialOptions.RenderType.TransparentCutout;
-                }
-                else
-                {
-                    materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Geometry;
-                    materialOptions.renderType = SurfaceMaterialOptions.RenderType.Opaque;
-                }
             }
             else
             {
@@ -877,20 +898,24 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                         materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
                         materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
                         break;
+                    // This isn't supported in HDRP.
+                    case AlphaMode.Multiply:
+                        materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
+                        materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.OneMinusSrcAlpha;
+                        break;
                 }
                 materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
                 materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
-                materialOptions.renderQueue = SurfaceMaterialOptions.RenderQueue.Transparent;
-                materialOptions.renderQueueOffset = sortPriority;
-                if (beforeRefraction)
-                {
-                    // This is certainly hacky, there is no queue entry for PreRefraction. Doing this to avoid completely flattening the queue to a integer, but perhaps it should be flattened.
-                    materialOptions.renderQueueOffset -= HDRenderQueue.Priority.Transparent - HDRenderQueue.Priority.PreRefraction;
-                }
-                materialOptions.renderType = SurfaceMaterialOptions.RenderType.Transparent;
             }
 
-            materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
+            if (backThenFront)
+            {
+                materialOptions.cullMode = SurfaceMaterialOptions.CullMode.Back;
+            }
+            else
+            {
+                materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
+            }
 
             return materialOptions;
         }

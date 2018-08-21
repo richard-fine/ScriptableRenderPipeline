@@ -12,7 +12,7 @@ namespace UnityEditor.ShaderGraph
     {
         Alpha,
         Premultiply,
-        Additive
-        //Multiply
+        Additive,
+        Multiply
     }
 }

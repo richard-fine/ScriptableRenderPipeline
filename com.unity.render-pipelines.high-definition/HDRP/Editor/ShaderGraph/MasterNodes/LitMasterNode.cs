@@ -31,9 +31,11 @@ namespace UnityEditor.ShaderGraph
         public const string AlphaSlotName = "Alpha";
         public const string AlphaClipThresholdSlotName = "AlphaClipThreshold";
         public const string AlphaClipThresholdDepthPrepassSlotName = "AlphaClipThresholdDepthPrepass";
-        public const string AlphaClipThresholdDepthPostpassSlotName = "AlphaClipThresholdDepthPrepass";
+        public const string AlphaClipThresholdDepthPostpassSlotName = "AlphaClipThresholdDepthPostpass";
         public const string AnisotropySlotName = "Anisotropy";
         public const string PositionName = "Position";
+        public const string SpecularAAScreenSpaceVarianceSlotName = "SpecularAAScreenSpaceVariance";
+        public const string SpecularAAThresholdSlotName = "SpecularAAThreshold";
 
         public const int PositionSlotId = 0;
         public const int AlbedoSlotId = 1;
@@ -56,6 +58,8 @@ namespace UnityEditor.ShaderGraph
         public const int AlphaThresholdDepthPrepassSlotId = 18;
         public const int AlphaThresholdDepthPostpassSlotId = 19;
         public const int AnisotropySlotId = 20;
+        public const int SpecularAAScreenSpaceVarianceSlotId = 21;
+        public const int SpecularAAThresholdSlotId = 22;
 
         public enum MaterialType
         {
@@ -380,6 +384,7 @@ namespace UnityEditor.ShaderGraph
                 if (m_SpecularAA == value.isOn)
                     return;
                 m_SpecularAA = value.isOn;
+                UpdateNodeAfterDeserialization();
                 Dirty(ModificationScope.Topological);
             }
         }
@@ -425,6 +430,22 @@ namespace UnityEditor.ShaderGraph
                 if (m_MotionVectors == value.isOn)
                     return;
                 m_MotionVectors = value.isOn;
+                Dirty(ModificationScope.Graph);
+            }
+        }
+
+        [SerializeField]
+        EmissionGIMode m_EmissionGIMode;
+
+        public EmissionGIMode emissionGIMode
+        {
+            get { return m_EmissionGIMode; }
+            set
+            {
+                if (m_EmissionGIMode == value)
+                    return;
+
+                m_EmissionGIMode = value;
                 Dirty(ModificationScope.Graph);
             }
         }
@@ -597,6 +618,14 @@ namespace UnityEditor.ShaderGraph
             {
                 AddSlot(new Vector1MaterialSlot(AlphaThresholdDepthPostpassSlotId, AlphaClipThresholdDepthPostpassSlotName, AlphaClipThresholdDepthPostpassSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
                 validSlots.Add(AlphaThresholdDepthPostpassSlotId);
+            }
+            if (specularAA.isOn)
+            {
+                AddSlot(new Vector1MaterialSlot(SpecularAAScreenSpaceVarianceSlotId, SpecularAAScreenSpaceVarianceSlotName, SpecularAAScreenSpaceVarianceSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
+                validSlots.Add(SpecularAAScreenSpaceVarianceSlotId);
+
+                AddSlot(new Vector1MaterialSlot(SpecularAAThresholdSlotId, SpecularAAThresholdSlotName, SpecularAAThresholdSlotName, SlotType.Input, 0.0f, ShaderStageCapability.Fragment));
+                validSlots.Add(SpecularAAThresholdSlotId);
             }
 
             RemoveSlotsNameNotMatching(validSlots, true);

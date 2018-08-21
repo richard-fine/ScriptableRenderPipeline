@@ -178,33 +178,21 @@ namespace UnityEditor.ShaderGraph.Drawing
                 });
             });
 
-            if (m_Node.specularAA.isOn)
-            {
-                ps.Add(new PropertyRow(new Label("    Screen Space Variance")), (row) =>
-                {
-                    Action<float> changed = (s) => { ChangeSpecularAAScreenSpaceVariance(s); };
-                    row.Add(new Slider(0.0f, 1.0f, changed), (slider) =>
-                    {
-                        slider.value = m_Node.specularAAScreenSpaceVariance;
-                    });
-                });
-
-                ps.Add(new PropertyRow(new Label("    Threshold")), (row) =>
-                {
-                    Action<float> changed = (s) => { ChangeSpecularAAThreshold(s); };
-                    row.Add(new Slider(0.0f, 1.0f, changed), (slider) =>
-                    {
-                        slider.value = m_Node.specularAAThreshold;
-                    });
-                });
-            }
-
             ps.Add(new PropertyRow(new Label("Motion Vectors For Vertex Animation")), (row) =>
             {
                 row.Add(new Toggle(), (toggle) =>
                 {
                     toggle.value = m_Node.motionVectors.isOn;
                     toggle.OnToggleChanged(ChangeMotionVectors);
+                });
+            });
+
+            ps.Add(new PropertyRow(new Label("Emission GI")), (row) =>
+            {
+                row.Add(new EnumField(EmissionGIMode.Disabled), (field) =>
+                {
+                    field.value = m_Node.emissionGIMode;
+                    field.OnValueChanged(ChangeEmissionGIMode);
                 });
             });
 
@@ -356,24 +344,6 @@ namespace UnityEditor.ShaderGraph.Drawing
             m_Node.specularAA = td;
         }
 
-        void ChangeSpecularAAScreenSpaceVariance(float value)
-        {
-            if (Equals(m_Node.specularAAScreenSpaceVariance, value))
-                return;
-
-            m_Node.owner.owner.RegisterCompleteObjectUndo("Specular AA Screen Space Variance Change");
-            m_Node.specularAAScreenSpaceVariance = value;
-        }
-
-        void ChangeSpecularAAThreshold(float value)
-        {
-            if (Equals(m_Node.specularAAThreshold, value))
-                return;
-
-            m_Node.owner.owner.RegisterCompleteObjectUndo("Specular AA Threshold Change");
-            m_Node.specularAAThreshold = value;
-        }
-
         void ChangeEnergyConservingSpecular(ChangeEvent<bool> evt)
         {
             m_Node.owner.owner.RegisterCompleteObjectUndo("Energy Conserving Specular Change");
@@ -388,6 +358,15 @@ namespace UnityEditor.ShaderGraph.Drawing
             ToggleData td = m_Node.motionVectors;
             td.isOn = evt.newValue;
             m_Node.motionVectors = td;
+        }
+
+        void ChangeEmissionGIMode(ChangeEvent<Enum> evt)
+        {
+            if (Equals(m_Node.emissionGIMode, evt.newValue))
+                return;
+
+            m_Node.owner.owner.RegisterCompleteObjectUndo("Emission GI Mode Change");
+            m_Node.emissionGIMode = (EmissionGIMode)evt.newValue;
         }
 
         void ChangeAlbedoAffectsEmissive(ChangeEvent<bool> evt)
