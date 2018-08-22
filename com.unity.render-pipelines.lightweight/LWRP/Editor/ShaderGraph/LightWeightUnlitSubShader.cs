@@ -169,6 +169,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             var vertexRequirements = ShaderGraphRequirements.FromNodes(vertexNodes, ShaderStageCapability.Vertex, false);
             var pixelRequirements = ShaderGraphRequirements.FromNodes(pixelNodes, ShaderStageCapability.Fragment);
+            var graphRequirements = pixelRequirements.Union(vertexRequirements);
             var surfaceRequirements = ShaderGraphRequirements.FromNodes(pixelNodes, ShaderStageCapability.Fragment, false);
 
             var modelRequiements = ShaderGraphRequirements.none;
@@ -204,6 +205,12 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
             if (masterNode.surfaceType == SurfaceType.Transparent && masterNode.alphaMode == AlphaMode.Premultiply)
                 defines.AppendLine("#define _ALPHAPREMULTIPLY_ON 1");
+
+            if (graphRequirements.requiresDepthTexture)
+                defines.AppendLine("#define REQUIRE_DEPTH_TEXTURE");
+
+            if (graphRequirements.requiresCameraOpaqueTexture)
+                defines.AppendLine("#define REQUIRE_OPAQUE_TEXTURE");
 
             // ----------------------------------------------------- //
             //                START VERTEX DESCRIPTION               //
