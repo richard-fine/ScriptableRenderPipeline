@@ -91,10 +91,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 "AttributesMesh.uv1",
                 "AttributesMesh.color",
                 "AttributesMesh.uv2",           // SHADERPASS_LIGHT_TRANSPORT always uses uv2
-
-                // Need these also?
-                "FragInputs.worldToTangent",
-                "FragInputs.positionRWS",
             },
             PixelShaderSlots = new List<int>()
             {
@@ -172,7 +168,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             ShaderPassName = "SHADERPASS_DEPTH_ONLY",
             ExtraDefines = new List<string>()
             {
-                //"#pragma multi_compile _ WRITE_NORMAL_BUFFER",
+                "#pragma multi_compile _ WRITE_NORMAL_BUFFER",
             },
             ColorMaskOverride = "ColorMask 0",
             Includes = new List<string>()
@@ -391,6 +387,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 "FragInputs.worldToTangent",
                 "FragInputs.positionRWS",
+                "FragInputs.texCoord2" // lightmap
             },
             PixelShaderSlots = new List<int>()
             {
