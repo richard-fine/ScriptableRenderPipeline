@@ -66,6 +66,26 @@ namespace UnityEditor.ShaderGraph
             get { return PreviewMode.Preview3D; }
         }
 
+        public ShaderStageCapability effectiveShaderStage
+        {
+            get
+            {
+                List<MaterialSlot> slots = new List<MaterialSlot>();
+                GetInputSlots(slots);
+
+                foreach(MaterialSlot slot in slots)
+                {
+                    ShaderStageCapability stage = NodeUtils.GetEffectiveShaderStageCapability(slot, true)
+                        & NodeUtils.GetEffectiveShaderStageCapability(slot, false);
+
+                    if(stage != ShaderStageCapability.All)
+                        return stage;
+                }
+                
+                return ShaderStageCapability.All;
+            }
+        }
+
         public virtual int AddSlot()
         {
             var index = this.GetInputSlots<ISlot>().Count() + 1;
