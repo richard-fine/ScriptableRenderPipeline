@@ -1,5 +1,9 @@
 ## [3.4.0]
 
+### Vertex shader Sub-graph support
+
+Shader Graph now supports connecting Sub-graph nodes to vertex shader slots. If any node in the referenced Sub-graph asset specifies a shader stage a Sub-graph node referencing it will be locked to that stage. Once an instance of a Sub-graph node is connected to a slot specifying a shader stage all slots on that instance will be locked to that stage. 
+
 ## [3.3.0]
 
 ## [3.2.0]

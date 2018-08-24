@@ -294,7 +294,6 @@ namespace UnityEditor.ShaderGraph
 
             foreach(MaterialSlot slot in slots)
             {
-                Debug.Log(NodeUtils.GetEffectiveShaderStageCapability(slot, true) + " - " + NodeUtils.GetEffectiveShaderStageCapability(slot, false));
                 ShaderStageCapability stage = NodeUtils.GetEffectiveShaderStageCapability(slot, true)
                     & NodeUtils.GetEffectiveShaderStageCapability(slot, false);
 
