@@ -1,10 +1,10 @@
 {
   "dependencies": {
     "com.unity.package-manager-ui": "2.0.0-preview.7",
-    "com.unity.render-pipelines.core": "file: ../../../../../GitHub/ScriptableRenderPipeline/com.unity.render-pipelines.core",
-    "com.unity.render-pipelines.high-definition": "file: ../../../../../GitHub/ScriptableRenderPipeline/com.unity.render-pipelines.high-definition",
-    "com.unity.render-pipelines.lightweight": "file: ../../../../../GitHub/ScriptableRenderPipeline/com.unity.render-pipelines.lightweight",
-    "com.unity.shadergraph": "file: ../../../../../GitHub/ScriptableRenderPipeline/com.unity.shadergraph",
+    "com.unity.render-pipelines.core": "file:../../../com.unity.render-pipelines.core",
+    "com.unity.render-pipelines.high-definition": "file:../../../com.unity.render-pipelines.high-definition",
+    "com.unity.render-pipelines.lightweight": "file:../../../com.unity.render-pipelines.lightweight",
+    "com.unity.shadergraph": "file:../../../com.unity.shadergraph",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
     "com.unity.modules.assetbundle": "1.0.0",
