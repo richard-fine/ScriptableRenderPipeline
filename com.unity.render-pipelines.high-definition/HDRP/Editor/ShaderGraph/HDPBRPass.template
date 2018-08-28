@@ -49,8 +49,10 @@ Pass
         $AlphaTestPostpass:              #define _ALPHATEST_ON 1
         $AlphaFog:                       #define _ENABLE_FOG_ON_TRANSPARENT 1
         $Occlusion:                      #define _OCCLUSION 1
-        $BentNormal:                     #define _BENTNORMAL 1
-        $BentNormalSpecularOcclusion:    #define _BENTNORMAL_SPECULAR_OCCLUSION 1
+        $SpecularOcclusion:              #define _SPECULAR_OCCLUSION 1
+        $BentNormal:                     #define _BENT_NORMAL 1
+        $BentNormalSpecularOcclusion:    #define _BENT_NORMAL_SPECULAR_OCCLUSION 1
+        
         $Specular.EnergyConserving:      #define _ENERGY_CONSERVING_SPECULAR 1
         $Specular.AA:                    #define _ENABLE_GEOMETRIC_SPECULAR_AA 1
         $Refraction:                     #define _HAS_REFRACTION 1
@@ -246,7 +248,7 @@ $include("SharedCode.template.hlsl")
         GetNormalWS(fragInputs, normalTS, surfaceData.normalWS);
 
         float3 bentNormalTS = float3(0.0f, 0.0f, 1.0f);
-#ifdef _BENTNORMAL
+#ifdef _BENT_NORMAL
         bentNormalTS = surfaceDescription.BentNormal;
         GetNormalWS(fragInputs, bentNormalTS, bentNormalWS);
 #else
@@ -266,10 +268,10 @@ $include("SharedCode.template.hlsl")
         // By default we use the ambient occlusion with Tri-ace trick (apply outside) for specular occlusion.
         // If user provide bent normal then we process a better term
         surfaceData.specularOcclusion = 1.0;
-#if defined(_BENTNORMAL) && defined(_BENTNORMAL_SPECULAR_OCCLUSION)
+#if defined(_BENT_NORMAL) && defined(_BENT_NORMAL_SPECULAR_OCCLUSION)
         // If we have bent normal and ambient occlusion, process a specular occlusion
         surfaceData.specularOcclusion = GetSpecularOcclusionFromBentAO(V, bentNormalWS, surfaceData);
-#elif defined(_OCCLUSION)
+#elif defined(_OCCLUSION) && defined(SPECULAR_OCCLUSION)
         surfaceData.specularOcclusion = GetSpecularOcclusionFromAmbientOcclusion(ClampNdotV(dot(surfaceData.normalWS, V)), surfaceData.ambientOcclusion, PerceptualSmoothnessToRoughness(surfaceData.perceptualSmoothness));
 #else
         surfaceData.specularOcclusion = 1.0;

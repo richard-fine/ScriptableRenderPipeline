@@ -243,15 +243,6 @@ namespace UnityEditor.ShaderGraph.Drawing
                 });
             });
 
-            ps.Add(new PropertyRow(new Label("Emission GI")), (row) =>
-            {
-                row.Add(new EnumField(EmissionGIMode.Disabled), (field) =>
-                {
-                    field.value = m_Node.emissionGIMode;
-                    field.OnValueChanged(ChangeEmissionGIMode);
-                });
-            });
-
             ps.Add(new PropertyRow(new Label("Albedo Affects Emissive")), (row) =>
             {
                 row.Add(new Toggle(), (toggle) =>
@@ -261,12 +252,12 @@ namespace UnityEditor.ShaderGraph.Drawing
                 });
             });
 
-            ps.Add(new PropertyRow(new Label("Specular Occlusion From Bent Normal ")), (row) =>
+            ps.Add(new PropertyRow(new Label("Specular Occlusion Mode")), (row) =>
             {
-                row.Add(new Toggle(), (toggle) =>
+                row.Add(new EnumField(SpecularOcclusionMode.Off), (field) =>
                 {
-                    toggle.value = m_Node.bentNormalSpecularOcclusion.isOn;
-                    toggle.OnToggleChanged(ChangeBentNormalSpecularOcclusion);
+                    field.value = m_Node.specularOcclusionMode;
+                    field.OnValueChanged(ChangeSpecularOcclusionMode);
                 });
             });
 
@@ -460,15 +451,6 @@ namespace UnityEditor.ShaderGraph.Drawing
             m_Node.motionVectors = td;
         }
 
-        void ChangeEmissionGIMode(ChangeEvent<Enum> evt)
-        {
-            if (Equals(m_Node.emissionGIMode, evt.newValue))
-                return;
-
-            m_Node.owner.owner.RegisterCompleteObjectUndo("Emission GI Mode Change");
-            m_Node.emissionGIMode = (EmissionGIMode)evt.newValue;
-        }
-
         void ChangeAlbedoAffectsEmissive(ChangeEvent<bool> evt)
         {
             m_Node.owner.owner.RegisterCompleteObjectUndo("Albedo Affects Emissive Change");
@@ -477,12 +459,13 @@ namespace UnityEditor.ShaderGraph.Drawing
             m_Node.albedoAffectsEmissive = td;
         }
 
-        void ChangeBentNormalSpecularOcclusion(ChangeEvent<bool> evt)
+        void ChangeSpecularOcclusionMode(ChangeEvent<Enum> evt)
         {
-            m_Node.owner.owner.RegisterCompleteObjectUndo("Bent Normal Specular Occlusion Change");
-            ToggleData td = m_Node.bentNormalSpecularOcclusion;
-            td.isOn = evt.newValue;
-            m_Node.bentNormalSpecularOcclusion = td;
+            if (Equals(m_Node.specularOcclusionMode, evt.newValue))
+                return;
+
+            m_Node.owner.owner.RegisterCompleteObjectUndo("Specular Occlusion Mode Change");
+            m_Node.specularOcclusionMode = (SpecularOcclusionMode)evt.newValue;
         }
     }
 }

@@ -531,22 +531,6 @@ namespace UnityEditor.ShaderGraph
         }
 
         [SerializeField]
-        EmissionGIMode m_EmissionGIMode;
-
-        public EmissionGIMode emissionGIMode
-        {
-            get { return m_EmissionGIMode; }
-            set
-            {
-                if (m_EmissionGIMode == value)
-                    return;
-
-                m_EmissionGIMode = value;
-                Dirty(ModificationScope.Graph);
-            }
-        }
-
-        [SerializeField]
         bool m_AlbedoAffectsEmissive;
 
         public ToggleData albedoAffectsEmissive
@@ -562,16 +546,17 @@ namespace UnityEditor.ShaderGraph
         }
 
         [SerializeField]
-        bool m_BentNormalSpecularOcclusion;
+        SpecularOcclusionMode m_SpecularOcclusionMode;
 
-        public ToggleData bentNormalSpecularOcclusion
+        public SpecularOcclusionMode specularOcclusionMode
         {
-            get { return new ToggleData(m_BentNormalSpecularOcclusion); }
+            get { return m_SpecularOcclusionMode; }
             set
             {
-                if (m_BentNormalSpecularOcclusion == value.isOn)
+                if (m_SpecularOcclusionMode == value)
                     return;
-                m_BentNormalSpecularOcclusion = value.isOn;
+
+                m_SpecularOcclusionMode = value;
                 Dirty(ModificationScope.Graph);
             }
         }
