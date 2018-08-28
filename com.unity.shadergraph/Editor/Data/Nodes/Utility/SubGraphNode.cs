@@ -261,12 +261,11 @@ namespace UnityEditor.ShaderGraph
                 validNames.Add(id);
             }
 
-            var subGraphOutputNode = outputNode;
             if (outputNode != null)
             {
-                var outputStage = ((SubGraphOutputNode)subGraphOutputNode).effectiveShaderStage;
+                var outputStage = ((SubGraphOutputNode)outputNode).effectiveShaderStage;
 
-                foreach (var slot in NodeExtensions.GetInputSlots<MaterialSlot>(subGraphOutputNode))
+                foreach (var slot in NodeExtensions.GetInputSlots<MaterialSlot>(outputNode))
                 {
                     AddSlot(MaterialSlot.CreateMaterialSlot(slot.valueType, slot.id, slot.RawDisplayName(), 
                         slot.shaderOutputName, SlotType.Output, Vector4.zero, outputStage));
@@ -280,6 +279,7 @@ namespace UnityEditor.ShaderGraph
         private void ValidateShaderStage()
         {
             List<MaterialSlot> slots = new List<MaterialSlot>();
+            GetInputSlots(slots);
             GetOutputSlots(slots);
 
             var subGraphOutputNode = outputNode;
@@ -294,8 +294,7 @@ namespace UnityEditor.ShaderGraph
 
             foreach(MaterialSlot slot in slots)
             {
-                ShaderStageCapability stage = NodeUtils.GetEffectiveShaderStageCapability(slot, true)
-                    & NodeUtils.GetEffectiveShaderStageCapability(slot, false);
+                ShaderStageCapability stage = NodeUtils.GetEffectiveShaderStageCapability(slot, slot.slotType == SlotType.Output);
 
                 if(stage != ShaderStageCapability.All)
                 {

@@ -75,8 +75,7 @@ namespace UnityEditor.ShaderGraph
 
                 foreach(MaterialSlot slot in slots)
                 {
-                    ShaderStageCapability stage = NodeUtils.GetEffectiveShaderStageCapability(slot, true)
-                        & NodeUtils.GetEffectiveShaderStageCapability(slot, false);
+                    ShaderStageCapability stage = NodeUtils.GetEffectiveShaderStageCapability(slot, true);
 
                     if(stage != ShaderStageCapability.All)
                         return stage;
@@ -91,22 +90,10 @@ namespace UnityEditor.ShaderGraph
             List<MaterialSlot> slots = new List<MaterialSlot>();
             GetInputSlots(slots);
 
-            ShaderStageCapability effectiveStage = ShaderStageCapability.All;
-
             foreach(MaterialSlot slot in slots)
-                slot.stageCapability = effectiveStage;
+                slot.stageCapability = ShaderStageCapability.All;
 
-            foreach(MaterialSlot slot in slots)
-            {
-                ShaderStageCapability stage = NodeUtils.GetEffectiveShaderStageCapability(slot, true)
-                    & NodeUtils.GetEffectiveShaderStageCapability(slot, false);
-
-                if(stage != ShaderStageCapability.All)
-                {
-                    effectiveStage = stage;
-                    break;
-                }
-            }
+            var effectiveStage = effectiveShaderStage;
             
             foreach(MaterialSlot slot in slots)
                 slot.stageCapability = effectiveStage;
