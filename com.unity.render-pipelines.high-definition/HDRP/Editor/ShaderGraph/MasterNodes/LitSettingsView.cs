@@ -36,9 +36,9 @@ namespace UnityEditor.ShaderGraph.Drawing
                 {
                     ps.Add(new PropertyRow(new Label("    Blend Mode")), (row) =>
                     {
-                        row.Add(new EnumField(AlphaMode.Additive), (field) =>
+                        row.Add(new EnumField(AlphaModeNoMultiply.Additive), (field) =>
                         {
-                            field.value = m_Node.alphaMode;
+                            field.value = (AlphaModeNoMultiply)m_Node.alphaMode;
                             field.OnValueChanged(ChangeBlendMode);
                         });
                     });
@@ -84,7 +84,7 @@ namespace UnityEditor.ShaderGraph.Drawing
 
                     if (m_Node.refractionModel != ScreenSpaceLighting.RefractionModel.None)
                     {
-                        ps.Add(new PropertyRow(new Label("        Projection Model")), (row) =>
+                        ps.Add(new PropertyRow(new Label("        SSRay Model")), (row) =>
                         {
                             row.Add(new EnumField(ScreenSpaceLighting.PickableProjectionModel.Proxy), (field) =>
                             {
@@ -204,18 +204,9 @@ namespace UnityEditor.ShaderGraph.Drawing
                 });
             }
 
-            ps.Add(new PropertyRow(new Label("Receive Decals")), (row) =>
-            {
-                row.Add(new Toggle(), (toggle) =>
-                {
-                    toggle.value = m_Node.receiveDecals.isOn;
-                    toggle.OnToggleChanged(ChangeDecal);
-                });
-            });
-
             if (m_Node.materialType == LitMasterNode.MaterialType.SpecularColor)
             {
-                ps.Add(new PropertyRow(new Label("Energy Conserving Specular")), (row) =>
+                ps.Add(new PropertyRow(new Label("    Energy Conserving Specular")), (row) =>
                 {
                     row.Add(new Toggle(), (toggle) =>
                     {
@@ -224,6 +215,15 @@ namespace UnityEditor.ShaderGraph.Drawing
                     });
                 });
             }
+
+            ps.Add(new PropertyRow(new Label("Receive Decals")), (row) =>
+            {
+                row.Add(new Toggle(), (toggle) =>
+                {
+                    toggle.value = m_Node.receiveDecals.isOn;
+                    toggle.OnToggleChanged(ChangeDecal);
+                });
+            });
 
             ps.Add(new PropertyRow(new Label("Specular AA")), (row) =>
             {
@@ -310,11 +310,12 @@ namespace UnityEditor.ShaderGraph.Drawing
 
         void ChangeBlendMode(ChangeEvent<Enum> evt)
         {
-            if (Equals(m_Node.alphaMode, evt.newValue))
+            AlphaMode alphaMode = (AlphaMode)evt.newValue;
+            if (Equals(m_Node.alphaMode, alphaMode))
                 return;
 
             m_Node.owner.owner.RegisterCompleteObjectUndo("Alpha Mode Change");
-            m_Node.alphaMode = (AlphaMode)evt.newValue;
+            m_Node.alphaMode = alphaMode;
         }
 
         void ChangeBlendPreserveSpecular(ChangeEvent<bool> evt)

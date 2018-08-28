@@ -800,5 +800,28 @@ namespace UnityEditor.ShaderGraph
         {
             return materialType == LitMasterNode.MaterialType.SubsurfaceScattering;
         }
+
+        public override void CollectShaderProperties(PropertyCollector collector, GenerationMode generationMode)
+        {
+            //bool emissionGI = IsSlotConnected(LitMasterNode.EmissionSlotId);
+            //if (!emissionGI)
+            //{
+            //    var colorSlot = FindSlot<MaterialSlot>(LitMasterNode.EmissionSlotId) as ColorRGBMaterialSlot;
+            //    emissionGI = colorSlot.value.x > 0.0f || colorSlot.value.y > 0.0f || colorSlot.value.z > 0.0f;
+            //}
+
+            collector.AddShaderProperty(new ColorShaderProperty()
+            {
+                overrideReferenceName = "_EmissionColor",
+                hidden = true,
+                // Ideally we'd like to turn emission off entirely if the slot if not connected and is black, but
+                // the _EmissionColor cannot be changed in code once it has been added to the material, so just set it to
+                // white and rely on the user using the Emission check box to turn GI on and off appropriately.
+                //value = emissionGI ? new Vector4(1.0f, 1.0f, 1.0f, 1.0f) : new Vector4(0.0f, 0.0f, 0.0f, 0.0f)
+                value = new Color(1.0f, 1.0f, 1.0f, 1.0f)
+            });
+
+            base.CollectShaderProperties(collector, generationMode);
+        }
     }
 }
