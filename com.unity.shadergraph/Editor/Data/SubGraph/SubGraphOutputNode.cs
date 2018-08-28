@@ -86,6 +86,39 @@ namespace UnityEditor.ShaderGraph
             }
         }
 
+        private void ValidateShaderStage()
+        {
+            List<MaterialSlot> slots = new List<MaterialSlot>();
+            GetInputSlots(slots);
+
+            ShaderStageCapability effectiveStage = ShaderStageCapability.All;
+
+            foreach(MaterialSlot slot in slots)
+                slot.stageCapability = effectiveStage;
+
+            foreach(MaterialSlot slot in slots)
+            {
+                ShaderStageCapability stage = NodeUtils.GetEffectiveShaderStageCapability(slot, true)
+                    & NodeUtils.GetEffectiveShaderStageCapability(slot, false);
+
+                if(stage != ShaderStageCapability.All)
+                {
+                    effectiveStage = stage;
+                    break;
+                }
+            }
+            
+            foreach(MaterialSlot slot in slots)
+                slot.stageCapability = effectiveStage;
+        }
+
+        public override void ValidateNode()
+        {
+            ValidateShaderStage();
+
+            base.ValidateNode();
+        }
+
         public virtual int AddSlot()
         {
             var index = this.GetInputSlots<ISlot>().Count() + 1;
