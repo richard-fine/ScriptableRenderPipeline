@@ -117,7 +117,7 @@ namespace UnityEditor.ShaderGraph
             get { return "https://github.com/Unity-Technologies/ShaderGraph/wiki/Sub-graph-Node"; }
         }
 
-        public void GenerateNodeCode(ShaderGenerator visitor, GenerationMode generationMode)
+        public void GenerateNodeCode(ShaderGenerator visitor, GraphContext graphContext, GenerationMode generationMode)
         {
             if (referencedGraph == null)
                 return;
@@ -150,7 +150,7 @@ namespace UnityEditor.ShaderGraph
 
             visitor.AddShaderChunk(
                 string.Format("{0}({1});"
-                    , SubGraphFunctionName()
+                    , SubGraphFunctionName(graphContext)
                     , arguments.Aggregate((current, next) => string.Format("{0}, {1}", current, next)))
                 , false);
         }
@@ -343,10 +343,10 @@ namespace UnityEditor.ShaderGraph
             properties.AddRange(referencedGraph.GetPreviewProperties());
         }
 
-        private string SubGraphFunctionName()
+        private string SubGraphFunctionName(GraphContext graphContext)
         {
             var functionName = subGraphAsset != null ? NodeUtils.GetHLSLSafeName(subGraphAsset.name) : "ERROR";
-            return string.Format("sg_{0}_{1}", functionName, GuidEncoder.Encode(referencedGraph.guid));
+            return string.Format("sg_{0}_{1}_{2}", functionName, graphContext.graphInputStructName, GuidEncoder.Encode(referencedGraph.guid));
         }
 
         public virtual void GenerateNodeFunction(FunctionRegistry registry, GraphContext graphContext, GenerationMode generationMode)
@@ -355,7 +355,7 @@ namespace UnityEditor.ShaderGraph
                 return;
 
             referencedGraph.GenerateNodeFunction(registry, graphContext, GenerationMode.ForReals);
-            referencedGraph.GenerateSubGraphFunction(SubGraphFunctionName(), registry, graphContext, ShaderGraphRequirements.FromNodes(new List<INode> {this}), GenerationMode.ForReals);
+            referencedGraph.GenerateSubGraphFunction(SubGraphFunctionName(graphContext), registry, graphContext, ShaderGraphRequirements.FromNodes(new List<INode> {this}), GenerationMode.ForReals);
         }
 
         public NeededCoordinateSpace RequiresNormal(ShaderStageCapability stageCapability)
