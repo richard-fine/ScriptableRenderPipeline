@@ -12,7 +12,7 @@ namespace UnityEditor.ShaderGraph
 {
     [Serializable]
     [Title("Master", "Lit")]
-    public class LitMasterNode : MasterNode<ILitSubShader>, IMayRequirePosition, IMayRequireNormal
+    public class LitMasterNode : MasterNode<ILitSubShader>, IMayRequirePosition, IMayRequireNormal, IMayRequireTangent
     {
         public const string AlbedoSlotName = "Albedo";
         public const string NormalSlotName = "Normal";
@@ -627,7 +627,7 @@ namespace UnityEditor.ShaderGraph
             }
             if (MaterialTypeUsesSlotMask(SlotMask.Tangent))
             {
-                AddSlot(new NormalMaterialSlot(TangentSlotId, TangentSlotName, TangentSlotName, CoordinateSpace.Tangent, ShaderStageCapability.Fragment));
+                AddSlot(new TangentMaterialSlot(TangentSlotId, TangentSlotName, TangentSlotName, CoordinateSpace.Tangent, ShaderStageCapability.Fragment));
                 validSlots.Add(TangentSlotId);
             }
             if (MaterialTypeUsesSlotMask(SlotMask.Anisotropy))
@@ -763,6 +763,22 @@ namespace UnityEditor.ShaderGraph
                 validSlots.Add(slots[i]);
             }
             return validSlots.OfType<IMayRequireNormal>().Aggregate(NeededCoordinateSpace.None, (mask, node) => mask | node.RequiresNormal(stageCapability));
+        }
+
+        public NeededCoordinateSpace RequiresTangent(ShaderStageCapability stageCapability)
+        {
+            List<MaterialSlot> slots = new List<MaterialSlot>();
+            GetSlots(slots);
+
+            List<MaterialSlot> validSlots = new List<MaterialSlot>();
+            for (int i = 0; i < slots.Count; i++)
+            {
+                if (slots[i].stageCapability != ShaderStageCapability.All && slots[i].stageCapability != stageCapability)
+                    continue;
+
+                validSlots.Add(slots[i]);
+            }
+            return validSlots.OfType<IMayRequireTangent>().Aggregate(NeededCoordinateSpace.None, (mask, node) => mask | node.RequiresTangent(stageCapability));
         }
 
         public NeededCoordinateSpace RequiresPosition(ShaderStageCapability stageCapability)

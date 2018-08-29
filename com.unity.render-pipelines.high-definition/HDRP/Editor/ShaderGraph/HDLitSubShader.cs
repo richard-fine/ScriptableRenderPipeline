@@ -636,6 +636,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 activeFields.Add("BentNormal");
             }
 
+            if (masterNode.IsSlotConnected(LitMasterNode.TangentSlotId) && pass.PixelShaderUsesSlot(LitMasterNode.TangentSlotId))
+            {
+                activeFields.Add("Tangent");
+            }
+
             switch (masterNode.specularOcclusionMode)
             {
                 case SpecularOcclusionMode.Off:

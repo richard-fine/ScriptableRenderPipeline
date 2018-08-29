@@ -7,7 +7,7 @@ namespace UnityEditor.ShaderGraph
 {
     
     [Title("Input", "Texture", "Sample Texture 2D LOD")]
-    public class SampleTexture2DLODNode : AbstractMaterialNode, IGeneratesBodyCode, IMayRequireMeshUV
+    public class SampleTexture2DLODNode : AbstractMaterialNode, IGeneratesBodyCode, IMayRequireMeshUV, IMayRequireTangent, IMayRequireBitangent
     {
         public const int OutputSlotRGBAId = 0;
         public const int OutputSlotRId = 5;
@@ -76,6 +76,22 @@ namespace UnityEditor.ShaderGraph
             }
         }
 
+        [SerializeField]
+        private bool m_DerivativeMap = false;
+
+        [ToggleControl]
+        public ToggleData derivativeMap
+        {
+            get { return new ToggleData(m_DerivativeMap); }
+            set
+            {
+                if (m_DerivativeMap == value.isOn)
+                    return;
+                m_DerivativeMap = value.isOn;
+                Dirty(ModificationScope.Graph);
+            }
+        }
+
         public sealed override void UpdateNodeAfterDeserialization()
         {
             AddSlot(new Vector4MaterialSlot(OutputSlotRGBAId, kOutputSlotRGBAName, kOutputSlotRGBAName, SlotType.Output, Vector4.zero, ShaderStageCapability.All));
@@ -117,11 +133,27 @@ namespace UnityEditor.ShaderGraph
             {
                 if (normalMapSpace == NormalMapSpace.Tangent)
                 {
-                    visitor.AddShaderChunk(string.Format("{0}.rgb = UnpackNormalmapRGorAG({0});", GetVariableNameForSlot(OutputSlotRGBAId)), true);
+                    if (derivativeMap.isOn)
+                    {
+                        visitor.AddShaderChunk(string.Format("{0}2 deriv = UnpackDerivativeNormalRGorAG({1});", precision, GetVariableNameForSlot(OutputSlotRGBAId)), true);
+                        visitor.AddShaderChunk(string.Format("{0}.rgb = SurfaceGradientFromTBN(deriv, IN.WorldSpaceTangent, IN.WorldSpaceBiTangent);", GetVariableNameForSlot(OutputSlotRGBAId)), true);
+                    }
+                    else
+                    {
+                        visitor.AddShaderChunk(string.Format("{0}.rgb = UnpackNormalmapRGorAG({0});", GetVariableNameForSlot(OutputSlotRGBAId)), true);
+                    }
                 }
                 else
                 {
-                    visitor.AddShaderChunk(string.Format("{0}.rgb = UnpackNormalRGB({0});", GetVariableNameForSlot(OutputSlotRGBAId)), true);
+                    if (derivativeMap.isOn)
+                    {
+                        visitor.AddShaderChunk(string.Format("{0}2 deriv = UnpackDerivativeNormalRGB({1});", precision, GetVariableNameForSlot(OutputSlotRGBAId)), true);
+                        visitor.AddShaderChunk(string.Format("{0}.rgb = SurfaceGradientFromTBN(deriv, IN.WorldSpaceTangent, IN.WorldSpaceBiTangent);", GetVariableNameForSlot(OutputSlotRGBAId)), true);
+                    }
+                    else
+                    {
+                        visitor.AddShaderChunk(string.Format("{0}.rgb = UnpackNormalRGB({0});", GetVariableNameForSlot(OutputSlotRGBAId)), true);
+                    }
                 }
             }
 
@@ -141,6 +173,16 @@ namespace UnityEditor.ShaderGraph
                     return true;
             }
             return false;
+        }
+
+        public NeededCoordinateSpace RequiresTangent(ShaderStageCapability stageCapability)
+        {
+            return (textureType == TextureType.Normal && derivativeMap.isOn) ? NeededCoordinateSpace.World : NeededCoordinateSpace.None;
+        }
+
+        public NeededCoordinateSpace RequiresBitangent(ShaderStageCapability stageCapability)
+        {
+            return (textureType == TextureType.Normal && derivativeMap.isOn) ? NeededCoordinateSpace.World : NeededCoordinateSpace.None;
         }
     }
 }

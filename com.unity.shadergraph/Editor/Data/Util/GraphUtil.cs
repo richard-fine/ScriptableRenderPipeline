@@ -1086,6 +1086,7 @@ namespace UnityEditor.ShaderGraph
                 finalShader.AppendLine("#define USE_LEGACY_UNITY_MATRIX_VARIABLES");
                 finalShader.AppendLine(@"#include ""CoreRP/ShaderLibrary/Common.hlsl""");
                 finalShader.AppendLine(@"#include ""CoreRP/ShaderLibrary/Packing.hlsl""");
+                finalShader.AppendLine(@"#include ""CoreRP/ShaderLibrary/NormalSurfaceGradient.hlsl""");
                 finalShader.AppendLine(@"#include ""CoreRP/ShaderLibrary/Color.hlsl""");
                 finalShader.AppendLine(@"#include ""CoreRP/ShaderLibrary/UnityInstancing.hlsl""");
                 finalShader.AppendLine(@"#include ""CoreRP/ShaderLibrary/EntityLighting.hlsl""");
