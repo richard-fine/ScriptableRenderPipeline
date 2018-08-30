@@ -28,10 +28,10 @@ namespace UnityEditor.ShaderGraph
         [PopupControl]
         public PopupList diffusionProfile
         {
-            get 
-			{ 
-				return m_DiffusionProfile; 
-			}
+            get
+            {
+                return m_DiffusionProfile;
+            }
             set
             {
                 m_DiffusionProfile = value;
@@ -39,20 +39,33 @@ namespace UnityEditor.ShaderGraph
             }
         }
 
+        ButtonConfig m_ButtonConfig = new ButtonConfig()
+        {
+            text = "Goto",
+            action = () =>
+            {
+                var hdPipeline = UnityEngine.Experimental.Rendering.RenderPipelineManager.currentPipeline as HDRenderPipeline;
+                if (hdPipeline != null)
+                {
+                    var diffusionProfileSettings = hdPipeline.diffusionProfileSettings;
+                    Selection.activeObject = diffusionProfileSettings;
+                }
+            }
+        };
+
+        [ButtonControl]
+        public ButtonConfig buttonConfig
+        {
+            get
+            {
+                return m_ButtonConfig;
+            }
+        }
+
         private const int kOutputSlotId = 0;
         private const string kOutputSlotName = "Out";
 
         public override bool hasPreview { get { return false; } }
-
-        // Note - if the user changes active profile settings, this view does not currently update, and profile names will not match.
-        // Force dirtying of these settings with notification of change?
-
-        // Add the goto button.
-        //void OnGotoDiffusionProfile()
-        //{
-        //    var diffusionProfileSettings = GetDiffusionProfileSettings();
-        //    Selection.activeObject = diffusionProfileSettings;
-        //}
 
         public sealed override void UpdateNodeAfterDeserialization()
         {
