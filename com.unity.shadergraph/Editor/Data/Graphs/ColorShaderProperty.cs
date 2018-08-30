@@ -29,7 +29,7 @@ namespace UnityEditor.ShaderGraph
         public bool hidden
         {
             get { return m_Hidden; }
-            set { m_Hidden = hidden; }
+            set { m_Hidden = value; }
         }
 
         public ColorShaderProperty()
@@ -98,6 +98,8 @@ namespace UnityEditor.ShaderGraph
             var copied = new ColorShaderProperty();
             copied.displayName = displayName;
             copied.value = value;
+            copied.hidden = hidden;
+            copied.colorMode = colorMode;
             return copied;
         }
     }
