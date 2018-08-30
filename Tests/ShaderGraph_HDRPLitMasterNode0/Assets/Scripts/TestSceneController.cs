@@ -48,6 +48,7 @@ public abstract class TestSceneController : MonoBehaviour {
             Debug.LogError("The # of test cases must be even.");
         }
         maxMode = shGraphObjs.Length;
+
         for (int x = 0; x < maxMode; x++)
         {
             if (shGraphObjs[x] == null) Debug.LogError("shGraphObjs["+x+"] is null");
