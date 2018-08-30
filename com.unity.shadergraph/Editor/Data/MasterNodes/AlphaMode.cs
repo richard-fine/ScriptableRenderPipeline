@@ -8,13 +8,6 @@ namespace UnityEditor.ShaderGraph
         Transparent
     }
 
-    public enum AlphaModeNoMultiply
-    {
-        Alpha,
-        PremultipliedAlpha,
-        Additive,
-    }
-
     public enum AlphaMode
     {
         Alpha,

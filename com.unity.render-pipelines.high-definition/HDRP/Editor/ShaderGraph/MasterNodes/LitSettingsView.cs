@@ -10,6 +10,14 @@ using UnityEngine.Experimental.Rendering.HDPipeline;
 
 namespace UnityEditor.ShaderGraph.Drawing
 {
+    // Don't support Multiply
+    public enum AlphaModeLit
+    {
+        Alpha,
+        PremultipliedAlpha,
+        Additive,
+    }
+
     public class LitSettingsView : VisualElement
     {
         LitMasterNode m_Node;
@@ -36,9 +44,9 @@ namespace UnityEditor.ShaderGraph.Drawing
                 {
                     ps.Add(new PropertyRow(new Label("    Blend Mode")), (row) =>
                     {
-                        row.Add(new EnumField(AlphaModeNoMultiply.Additive), (field) =>
+                        row.Add(new EnumField(AlphaModeLit.Additive), (field) =>
                         {
-                            field.value = (AlphaModeNoMultiply)m_Node.alphaMode;
+                            field.value = (AlphaModeLit)m_Node.alphaMode;
                             field.OnValueChanged(ChangeBlendMode);
                         });
                     });
@@ -301,12 +309,31 @@ namespace UnityEditor.ShaderGraph.Drawing
 
         void ChangeBlendMode(ChangeEvent<Enum> evt)
         {
-            AlphaMode alphaMode = (AlphaMode)evt.newValue;
+            // Make sure the mapping is correct by handling each case.
+            AlphaModeLit alphaModeLit = (AlphaModeLit)evt.newValue;
+            AlphaMode alphaMode;
+            switch (alphaModeLit)
+            {
+                case AlphaModeLit.Alpha:
+                    alphaMode = AlphaMode.Alpha;
+                    break;
+                case AlphaModeLit.PremultipliedAlpha:
+                    alphaMode = AlphaMode.Premultiply;
+                    break;
+                case AlphaModeLit.Additive:
+                    alphaMode = AlphaMode.Additive;
+                    break;
+                default:
+                    alphaMode = AlphaMode.Alpha;
+                    break;
+            }
+
             if (Equals(m_Node.alphaMode, alphaMode))
                 return;
 
-            m_Node.owner.owner.RegisterCompleteObjectUndo("Alpha Mode Change");
             m_Node.alphaMode = alphaMode;
+
+            m_Node.owner.owner.RegisterCompleteObjectUndo("Alpha Mode Change");
         }
 
         void ChangeBlendPreserveSpecular(ChangeEvent<bool> evt)
