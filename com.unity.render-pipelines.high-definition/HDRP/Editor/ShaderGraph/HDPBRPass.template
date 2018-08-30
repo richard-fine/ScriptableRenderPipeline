@@ -205,8 +205,6 @@ $include("SharedCode.template.hlsl")
         $SurfaceDescription.IridescenceMask:            surfaceData.iridescenceMask =           surfaceDescription.IridescenceMask;
         $SurfaceDescription.IridescenceThickness:       surfaceData.iridescenceThickness =      surfaceDescription.IridescenceThickness;
         $SurfaceDescription.RefractionIndex:            surfaceData.ior =                       surfaceDescription.RefractionIndex;
-        // This just uses thickness defined for SSS.
-        //$SurfaceDescription.RefractionThickness:        surfaceData.refractionThickness =       surfaceDescription.RefractionThickness;
         $SurfaceDescription.RefractionColor:            surfaceData.transmittanceColor =        surfaceDescription.RefractionColor;
         $SurfaceDescription.RefractionDistance:         surfaceData.atDistance =                surfaceDescription.RefractionDistance;
         

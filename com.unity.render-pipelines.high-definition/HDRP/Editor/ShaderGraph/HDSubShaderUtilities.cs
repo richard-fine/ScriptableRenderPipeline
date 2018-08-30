@@ -499,7 +499,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
     public static class HDSubShaderUtilities
     {
-        public static bool GenerateShaderPass(AbstractMaterialNode masterNode, Pass pass, GenerationMode mode, SurfaceMaterialOptions materialOptions, HashSet<string> activeFields, List<string> activeUniforms, ShaderGenerator result, List<string> sourceAssetDependencyPaths)
+        public static bool GenerateShaderPass(AbstractMaterialNode masterNode, Pass pass, GenerationMode mode, SurfaceMaterialOptions materialOptions, HashSet<string> activeFields, ShaderGenerator result, List<string> sourceAssetDependencyPaths)
         {
             string templatePath = Path.Combine(Path.Combine(HDUtils.GetHDRenderPipelinePath(), "Editor"), "ShaderGraph");
             string templateLocation = Path.Combine(templatePath, pass.TemplateName);
@@ -668,15 +668,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 graph.AddShaderChunk("// Shared Graph Properties (uniform inputs)");
                 graph.AddShaderChunk(sharedProperties.GetPropertiesDeclaration(1));
-
-                {
-                    var builder = new ShaderStringBuilder(1);
-                    foreach (var uniform in activeUniforms)
-                    {
-                        builder.AppendLine(uniform);
-                    }
-                    graph.AddShaderChunk(builder.ToString());
-                }
 
                 if (vertexActive)
                 {

@@ -179,10 +179,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             // apply master node options to active fields
             HashSet<string> activeFields = GetActiveFieldsFromMasterNode(masterNode, pass);
-            List<string> activeUniforms = new List<string>(); // Nothing right now.
 
             // use standard shader pass generation
-            return HDSubShaderUtilities.GenerateShaderPass(masterNode, pass, mode, materialOptions, activeFields, activeUniforms, result, sourceAssetDependencyPaths);
+            return HDSubShaderUtilities.GenerateShaderPass(masterNode, pass, mode, materialOptions, activeFields, result, sourceAssetDependencyPaths);
         }
 
         public string GetSubshader(IMasterNode iMasterNode, GenerationMode mode, List<string> sourceAssetDependencyPaths = null)

@@ -585,9 +585,7 @@ namespace UnityEditor.ShaderGraph
 
         public override string documentationURL
         {
-            // Any entry needs to be created for Lit Master Node.
-            // Do we want to ultimately just replace the other PBR Master Node?
-            get { return "https://github.com/Unity-Technologies/ShaderGraph/wiki/PBR-Master-Node"; }
+            get { return "https://github.com/Unity-Technologies/ShaderGraph/wiki/Lit-Master-Node"; }
         }
 
         public bool HasRefraction()

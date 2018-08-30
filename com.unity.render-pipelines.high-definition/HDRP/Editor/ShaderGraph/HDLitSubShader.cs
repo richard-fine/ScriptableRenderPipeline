@@ -256,11 +256,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 "#include \"HDRP/ShaderPass/ShaderPassDistortion.hlsl\"",
             },
-            RequiredFields = new List<string>()
-            {
-//                "FragInputs.worldToTangent",
-//                "FragInputs.positionRWS",
-            },
             PixelShaderSlots = new List<int>()
             {
                 LitMasterNode.AlphaSlotId,
@@ -597,11 +592,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 UnityEngine.Debug.Assert(count == 1, "Alpha test value not set correctly");
             }
 
-            // Keywords for transparent
-            // #pragma shader_feature _SURFACE_TYPE_TRANSPARENT
             if (masterNode.surfaceType != SurfaceType.Opaque)
             {
-                // transparent-only defines
                 activeFields.Add("SurfaceType.Transparent");
 
                 if (masterNode.alphaMode == AlphaMode.Alpha)
@@ -627,11 +619,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     activeFields.Add("AlphaFog");
                 }
             }
-
-            // enable dithering LOD crossfade
-            // #pragma multi_compile _ LOD_FADE_CROSSFADE
-            // TODO: We should have this keyword only if VelocityInGBuffer is enable, how to do that ?
-            //#pragma multi_compile VELOCITYOUTPUT_OFF VELOCITYOUTPUT_ON
 
             if (masterNode.receiveDecals.isOn)
             {
@@ -711,12 +698,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
             if (pass.PixelShaderUsesSlot(LitMasterNode.OcclusionSlotId))
             {
-                // This check could be more elegant.
-                float ambientOcclusion = 0.0f;
-                float defaultAmbientOcclusion = 0.0f;
-                float.TryParse(masterNode.GetSlotValue(LitMasterNode.OcclusionSlotId, GenerationMode.ForReals), out ambientOcclusion);
-                float.TryParse(masterNode.GetSlotValue(LitMasterNode.OcclusionSlotId, GenerationMode.ForReals), out defaultAmbientOcclusion);
-                if (ambientOcclusion != defaultAmbientOcclusion)
+                var occlusionSlot = masterNode.FindSlot<Vector1MaterialSlot>(LitMasterNode.OcclusionSlotId);
+                if (occlusionSlot.value != occlusionSlot.defaultValue)
                 {
                     activeFields.Add("Occlusion");
                 }
@@ -748,10 +731,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
                 // apply master node options to active fields
                 HashSet<string> activeFields = GetActiveFieldsFromMasterNode(masterNode, pass);
-                List<string> activeUniforms = GetActiveUniformsFromMasterNode(masterNode, pass);
 
                 // use standard shader pass generation
-                return HDSubShaderUtilities.GenerateShaderPass(masterNode, pass, mode, materialOptions, activeFields, activeUniforms, result, sourceAssetDependencyPaths);
+                return HDSubShaderUtilities.GenerateShaderPass(masterNode, pass, mode, materialOptions, activeFields, result, sourceAssetDependencyPaths);
             }
             else
             {
