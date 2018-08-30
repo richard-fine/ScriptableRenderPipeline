@@ -66,10 +66,34 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 LitMasterNode.PositionSlotId
             },
-            AllowBypassAlphaTest = true,
-            AllowBackThenFrontRendering = false,
-            DynamicStencilForSplitLighting = true,
-            UseInPreview = true
+            UseInPreview = true,
+
+            OnGeneratePassImpl = (IMasterNode node, ref Pass pass) =>
+            {
+                var masterNode = node as LitMasterNode;
+                pass.StencilOverride = new List<string>()
+                {
+                    "// Stencil setup",
+                    "Stencil",
+                    "{",
+                    "   WriteMask 7",
+                        masterNode.RequiresSplitLighting() ? "   Ref  1" : "   Ref  2",
+                    "   Comp Always",
+                    "   Pass Replace",
+                    "}"
+                };
+
+                pass.ExtraDefines.Remove("#define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST");
+                if (masterNode.surfaceType == SurfaceType.Opaque)
+                {
+                    pass.ExtraDefines.Add("#define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST");
+                    pass.ZTestOverride = "ZTest Equal";
+                }
+                else
+                {
+                    pass.ZTestOverride = null;
+                }
+            }
         };
 
         Pass m_PassMETA = new Pass()
@@ -122,9 +146,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 //LitMasterNode.PositionSlotId
             },
-            AllowBypassAlphaTest = false,
-            AllowBackThenFrontRendering = false,
-            DynamicStencilForSplitLighting = false,
             UseInPreview = true
         };
 
@@ -154,9 +175,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 LitMasterNode.PositionSlotId
             },
-            AllowBypassAlphaTest = false,
-            AllowBackThenFrontRendering = false,
-            DynamicStencilForSplitLighting = false,
             UseInPreview = true
         };
 
@@ -184,9 +202,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 LitMasterNode.PositionSlotId
             },
-            AllowBypassAlphaTest = false,
-            AllowBackThenFrontRendering = false,
-            DynamicStencilForSplitLighting = false,
             UseInPreview = true
         };
 
@@ -224,9 +239,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 LitMasterNode.PositionSlotId
             },
-            AllowBypassAlphaTest = false,
-            AllowBackThenFrontRendering = false,
-            DynamicStencilForSplitLighting = false,
             UseInPreview = true
         };
 
@@ -261,10 +273,30 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 LitMasterNode.PositionSlotId
             },
-            AllowBypassAlphaTest = false,
-            AllowBackThenFrontRendering = false,
-            DynamicStencilForSplitLighting = false,
-            UseInPreview = true
+            UseInPreview = true,
+
+            OnGeneratePassImpl = (IMasterNode node, ref Pass pass) =>
+            {
+                var masterNode = node as LitMasterNode;
+                if (masterNode.distortionDepthTest.isOn)
+                {
+                    pass.ZTestOverride = "ZTest LEqual";
+                }
+                else
+                {
+                    pass.ZTestOverride = "ZTest Always";
+                }
+                if (masterNode.distortionMode == DistortionMode.Add)
+                {
+                    pass.BlendOverride = "Blend One One, One One";
+                    pass.BlendOpOverride = "BlendOp Add, Max";
+                }
+                else if (masterNode.distortionMode == DistortionMode.Multiply)
+                {
+                    pass.BlendOverride = "Blend DstColor Zero, DstAlpha Zero";
+                    pass.BlendOpOverride = "BlendOp Add, Add";
+                }
+            }
         };
 
         Pass m_PassTransparentDepthPrepass = new Pass()
@@ -293,9 +325,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 LitMasterNode.PositionSlotId
             },
-            AllowBypassAlphaTest = false,
-            AllowBackThenFrontRendering = false,
-            DynamicStencilForSplitLighting = false,
             UseInPreview = true
         };
 
@@ -356,9 +385,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 LitMasterNode.PositionSlotId
             },
-            AllowBypassAlphaTest = false,
-            AllowBackThenFrontRendering = false,
-            DynamicStencilForSplitLighting = false,
             UseInPreview = true
         };
 
@@ -419,10 +445,43 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 LitMasterNode.PositionSlotId
             },
-            AllowBypassAlphaTest = true,
-            AllowBackThenFrontRendering = true,
-            DynamicStencilForSplitLighting = true,
-            UseInPreview = true
+            UseInPreview = true,
+
+            OnGeneratePassImpl = (IMasterNode node, ref Pass pass) =>
+            {
+                var masterNode = node as LitMasterNode;
+                pass.StencilOverride = new List<string>()
+                {
+                    "// Stencil setup",
+                    "Stencil",
+                    "{",
+                    "   WriteMask 7",
+                        masterNode.RequiresSplitLighting() ? "   Ref  1" : "   Ref  2",
+                    "   Comp Always",
+                    "   Pass Replace",
+                    "}"
+                };
+
+                pass.ExtraDefines.Remove("#define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST");
+                if (masterNode.surfaceType == SurfaceType.Opaque)
+                {
+                    pass.ExtraDefines.Add("#define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST");
+                    pass.ZTestOverride = "ZTest Equal";
+                }
+                else
+                {
+                    pass.ZTestOverride = null;
+                }
+
+                if (masterNode.surfaceType == SurfaceType.Transparent && masterNode.backThenFrontRendering.isOn)
+                {
+                    pass.CullOverride = "Cull Back";
+                }
+                else
+                {
+                    pass.CullOverride = null;
+                }
+            }
         };
 
         Pass m_PassTransparentDepthPostpass = new Pass()
@@ -451,9 +510,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 LitMasterNode.PositionSlotId
             },
-            AllowBypassAlphaTest = false,
-            AllowBackThenFrontRendering = false,
-            DynamicStencilForSplitLighting = false,
             UseInPreview = true
         };
 
@@ -688,9 +744,9 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             if (mode == GenerationMode.ForReals || pass.UseInPreview)
             {
-                SurfaceMaterialOptions materialOptions = HDSubShaderUtilities.BuildMaterialOptions(masterNode.surfaceType, masterNode.alphaMode, pass.AllowBypassAlphaTest && masterNode.alphaTest.isOn, masterNode.doubleSidedMode != DoubleSidedMode.Disabled, pass.AllowBypassAlphaTest && masterNode.backThenFrontRendering.isOn, masterNode.HasRefraction());
+                SurfaceMaterialOptions materialOptions = HDSubShaderUtilities.BuildMaterialOptions(masterNode.surfaceType, masterNode.alphaMode, masterNode.doubleSidedMode != DoubleSidedMode.Disabled, masterNode.HasRefraction());
 
-                UpdateOverrides(masterNode, ref pass);
+                pass.OnGeneratePass(masterNode);
 
                 // apply master node options to active fields
                 HashSet<string> activeFields = GetActiveFieldsFromMasterNode(masterNode, pass);
@@ -702,42 +758,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             else
             {
                 return false;
-            }
-        }
-
-        // Move this logic completely into pass definition.
-        private static void UpdateOverrides(LitMasterNode masterNode, ref Pass pass)
-        {
-            // This all needs to be properly encapsulated by the pass definition, with custom logic per pass as needed.
-            if (pass.ExtraDefines != null)
-            {
-                pass.ExtraDefines.Remove("#define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST");
-                pass.ExtraDefines.Remove("#define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST");
-            }
-            if (pass.AllowBypassAlphaTest && masterNode.surfaceType == SurfaceType.Opaque)
-            {
-                if (pass.ExtraDefines == null)
-                {
-                    pass.ExtraDefines = new List<string>();
-                }
-                // These are both used for the same purpose, but let's make sure they are both defined in case something changes.
-                pass.ExtraDefines.Add("#define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST");
-                pass.ExtraDefines.Add("#define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST");
-            }
-
-            if (pass.DynamicStencilForSplitLighting)
-            {
-                pass.StencilOverride = new List<string>()
-                {
-                    "// Stencil setup",
-                    "Stencil",
-                    "{",
-                    "   WriteMask 7",
-                        masterNode.RequiresSplitLighting() ? "   Ref  1" : "   Ref  2",
-                    "   Comp Always",
-                    "   Pass Replace",
-                    "}"
-                };
             }
         }
 
@@ -793,26 +813,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
                 if (distortionActive)
                 {
-                    // Again, all of this needs to be completely encapsulated in the pass itself.
-                    if (masterNode.distortionDepthTest.isOn)
-                    {
-                        m_PassDistortion.ZTestOverride = "ZTest LEqual";
-                    }
-                    else
-                    {
-                        m_PassDistortion.ZTestOverride = "ZTest Always";
-                    }
-                    if (masterNode.distortionMode == DistortionMode.Add)
-                    {
-                        m_PassDistortion.BlendOverride = "Blend One One, One One";
-                        m_PassDistortion.BlendOpOverride = "BlendOp Add, Max";
-                    }
-                    else if(masterNode.distortionMode == DistortionMode.Multiply)
-                    {
-                        m_PassDistortion.BlendOverride = "Blend DstColor Zero, DstAlpha Zero";
-                        m_PassDistortion.BlendOpOverride = "BlendOp Add, Add";
-                    }
-
                     GenerateShaderPassLit(masterNode, m_PassDistortion, mode, subShader, sourceAssetDependencyPaths);
                 }
 

@@ -456,6 +456,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         }
     };
 
+    public delegate void OnGeneratePassDelegate(IMasterNode masterNode, ref Pass pass);
     public struct Pass
     {
         public string Name;
@@ -475,9 +476,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         public List<string> StencilOverride;
         public List<string> RequiredFields;         // feeds into the dependency analysis
         public ShaderGraphRequirements requirements;
-        public bool AllowBypassAlphaTest;
-        public bool AllowBackThenFrontRendering;
-        public bool DynamicStencilForSplitLighting;
         public bool UseInPreview;
 
         // All these lists could probably be hashed to aid lookups.
@@ -489,7 +487,15 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
         {
             return PixelShaderSlots.Contains(slotId);
         }
-    };
+        public void OnGeneratePass(IMasterNode masterNode)
+        {
+            if (OnGeneratePassImpl != null)
+            {
+                OnGeneratePassImpl(masterNode, ref this);
+            }
+        }
+        public OnGeneratePassDelegate OnGeneratePassImpl;
+    }
 
     public static class HDSubShaderUtilities
     {
@@ -867,9 +873,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
         public static SurfaceMaterialOptions BuildMaterialOptions(SurfaceType surfaceType,
                                                                   AlphaMode alphaMode,
-                                                                  bool bypassAlphaTest,
                                                                   bool twoSided,
-                                                                  bool backThenFront,
                                                                   bool refraction)
         {
             SurfaceMaterialOptions materialOptions = new SurfaceMaterialOptions();
@@ -877,14 +881,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             {
                 materialOptions.srcBlend = SurfaceMaterialOptions.BlendMode.One;
                 materialOptions.dstBlend = SurfaceMaterialOptions.BlendMode.Zero;
-                if (bypassAlphaTest)
-                {
-                    materialOptions.zTest = SurfaceMaterialOptions.ZTest.Equal;
-                }
-                else
-                {
-                    materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
-                }
+                materialOptions.zTest = SurfaceMaterialOptions.ZTest.LEqual;
                 materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.On;
             }
             else
@@ -921,14 +918,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 materialOptions.zWrite = SurfaceMaterialOptions.ZWrite.Off;
             }
 
-            if (backThenFront)
-            {
-                materialOptions.cullMode = SurfaceMaterialOptions.CullMode.Back;
-            }
-            else
-            {
-                materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
-            }
+            materialOptions.cullMode = twoSided ? SurfaceMaterialOptions.CullMode.Off : SurfaceMaterialOptions.CullMode.Back;
 
             return materialOptions;
         }
