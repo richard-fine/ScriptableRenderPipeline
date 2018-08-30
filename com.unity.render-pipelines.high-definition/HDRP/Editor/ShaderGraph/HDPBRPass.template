@@ -48,6 +48,7 @@ Pass
         $Occlusion:                      #define _OCCLUSION 1
         $SpecularOcclusion:              #define _SPECULAR_OCCLUSION 1
         $BentNormalSpecularOcclusion:    #define _BENT_NORMAL_SPECULAR_OCCLUSION 1
+        $BentNormal:                     #define _BENT_NORMAL 1
         $Specular.EnergyConserving:      #define _ENERGY_CONSERVING_SPECULAR 1
         $Specular.AA:                    #define _ENABLE_GEOMETRIC_SPECULAR_AA 1
         $Refraction:                     #define _HAS_REFRACTION 1

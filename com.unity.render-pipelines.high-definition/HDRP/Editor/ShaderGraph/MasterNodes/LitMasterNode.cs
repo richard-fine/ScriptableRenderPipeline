@@ -557,8 +557,7 @@ namespace UnityEditor.ShaderGraph
                     return;
 
                 m_SpecularOcclusionMode = value;
-                UpdateNodeAfterDeserialization();
-                Dirty(ModificationScope.Topological);
+                Dirty(ModificationScope.Graph);
             }
         }
 
@@ -619,7 +618,7 @@ namespace UnityEditor.ShaderGraph
                 AddSlot(new NormalMaterialSlot(NormalSlotId, NormalSlotName, NormalSlotName, CoordinateSpace.Tangent, ShaderStageCapability.Fragment));
                 validSlots.Add(NormalSlotId);
             }
-            if (MaterialTypeUsesSlotMask(SlotMask.BentNormal) && specularOcclusionMode == SpecularOcclusionMode.OnUseBentNormal)
+            if (MaterialTypeUsesSlotMask(SlotMask.BentNormal))
             {
                 AddSlot(new NormalMaterialSlot(BentNormalSlotId, BentNormalSlotName, BentNormalSlotName, CoordinateSpace.Tangent, ShaderStageCapability.Fragment));
                 validSlots.Add(BentNormalSlotId);

@@ -674,6 +674,11 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 }
             }
 
+            if (masterNode.IsSlotConnected(LitMasterNode.BentNormalSlotId) && pass.PixelShaderUsesSlot(LitMasterNode.BentNormalSlotId))
+            {
+                activeFields.Add("BentNormal");
+            }
+
             if (masterNode.IsSlotConnected(LitMasterNode.TangentSlotId) && pass.PixelShaderUsesSlot(LitMasterNode.TangentSlotId))
             {
                 activeFields.Add("Tangent");
@@ -687,10 +692,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     activeFields.Add("SpecularOcclusion");
                     break;
                 case SpecularOcclusionMode.OnUseBentNormal:
-                    if (masterNode.IsSlotConnected(LitMasterNode.BentNormalSlotId) && pass.PixelShaderUsesSlot(LitMasterNode.BentNormalSlotId))
-                    {
-                        activeFields.Add("BentNormalSpecularOcclusion");
-                    }
+                    activeFields.Add("BentNormalSpecularOcclusion");
                     break;
                 default:
                     break;
