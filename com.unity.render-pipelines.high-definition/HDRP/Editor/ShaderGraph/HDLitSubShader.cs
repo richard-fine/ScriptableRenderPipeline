@@ -84,7 +84,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 };
 
                 pass.ExtraDefines.Remove("#define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST");
-                if (masterNode.surfaceType == SurfaceType.Opaque)
+                if (masterNode.surfaceType == SurfaceType.Opaque && masterNode.alphaTest.isOn)
                 {
                     pass.ExtraDefines.Add("#define SHADERPASS_GBUFFER_BYPASS_ALPHA_TEST");
                     pass.ZTestOverride = "ZTest Equal";
@@ -463,7 +463,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 };
 
                 pass.ExtraDefines.Remove("#define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST");
-                if (masterNode.surfaceType == SurfaceType.Opaque)
+                if (masterNode.surfaceType == SurfaceType.Opaque && masterNode.alphaTest.isOn)
                 {
                     pass.ExtraDefines.Add("#define SHADERPASS_FORWARD_BYPASS_ALPHA_TEST");
                     pass.ZTestOverride = "ZTest Equal";
@@ -687,11 +687,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 }
             }
 
-            if (masterNode.IsSlotConnected(LitMasterNode.BentNormalSlotId) && pass.PixelShaderUsesSlot(LitMasterNode.BentNormalSlotId))
-            {
-                activeFields.Add("BentNormal");
-            }
-
             if (masterNode.IsSlotConnected(LitMasterNode.TangentSlotId) && pass.PixelShaderUsesSlot(LitMasterNode.TangentSlotId))
             {
                 activeFields.Add("Tangent");
@@ -705,7 +700,10 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                     activeFields.Add("SpecularOcclusion");
                     break;
                 case SpecularOcclusionMode.OnUseBentNormal:
-                    activeFields.Add("BentNormalSpecularOcclusion");
+                    if (masterNode.IsSlotConnected(LitMasterNode.BentNormalSlotId) && pass.PixelShaderUsesSlot(LitMasterNode.BentNormalSlotId))
+                    {
+                        activeFields.Add("BentNormalSpecularOcclusion");
+                    }
                     break;
                 default:
                     break;
