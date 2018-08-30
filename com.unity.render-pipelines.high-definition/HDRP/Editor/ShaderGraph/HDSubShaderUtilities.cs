@@ -499,7 +499,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
 
     public static class HDSubShaderUtilities
     {
-        public static bool GenerateShaderPass(AbstractMaterialNode masterNode, Pass pass, GenerationMode mode, SurfaceMaterialOptions materialOptions, HashSet<string> activeFields, ShaderGenerator result, List<string> sourceAssetDependencyPaths)
+        public static bool GenerateShaderPass(AbstractMaterialNode masterNode, Pass pass, GenerationMode mode, SurfaceMaterialOptions materialOptions, HashSet<string> activeFields, ShaderGenerator result, List<string> sourceAssetDependencyPaths, bool vertexActive)
         {
             string templatePath = Path.Combine(Path.Combine(HDUtils.GetHDRenderPipelinePath(), "Editor"), "ShaderGraph");
             string templateLocation = Path.Combine(templatePath, pass.TemplateName);
@@ -573,11 +573,7 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             ShaderStringBuilder vertexGraphOutputs = new ShaderStringBuilder();
 
             // check for vertex animation -- enables HAVE_VERTEX_MODIFICATION
-            bool vertexActive = false;
-            //if (masterNode.IsSlotConnected(PBRMasterNode.PositionSlotId))
-            // Do we expect this to work with any HD Master Node? User created?
-            // Perhaps we need an intermediate HD master node with common slot definitions.
-            if (masterNode.IsSlotConnected(LitMasterNode.PositionSlotId)) 
+            if (vertexActive)
             {
                 vertexActive = true;
                 activeFields.Add("features.modifyMesh");

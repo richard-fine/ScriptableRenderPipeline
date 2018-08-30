@@ -708,19 +708,6 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
             return activeFields;
         }
 
-        private static List<string> GetActiveUniformsFromMasterNode(INode iMasterNode, Pass pass)
-        {
-            var masterNode = iMasterNode as LitMasterNode;
-
-            List<string> uniforms = new List<string>();
-
-            if (masterNode.specularAA.isOn)
-            {
-            }
-
-            return uniforms;
-        }
-
         private static bool GenerateShaderPassLit(LitMasterNode masterNode, Pass pass, GenerationMode mode, ShaderGenerator result, List<string> sourceAssetDependencyPaths)
         {
             if (mode == GenerationMode.ForReals || pass.UseInPreview)
@@ -733,7 +720,8 @@ namespace UnityEditor.Experimental.Rendering.HDPipeline
                 HashSet<string> activeFields = GetActiveFieldsFromMasterNode(masterNode, pass);
 
                 // use standard shader pass generation
-                return HDSubShaderUtilities.GenerateShaderPass(masterNode, pass, mode, materialOptions, activeFields, result, sourceAssetDependencyPaths);
+                bool vertexActive = masterNode.IsSlotConnected(LitMasterNode.PositionSlotId);
+                return HDSubShaderUtilities.GenerateShaderPass(masterNode, pass, mode, materialOptions, activeFields, result, sourceAssetDependencyPaths, vertexActive);
             }
             else
             {
