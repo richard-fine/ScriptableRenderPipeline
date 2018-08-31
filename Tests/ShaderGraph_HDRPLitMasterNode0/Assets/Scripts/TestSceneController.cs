@@ -9,7 +9,7 @@ public abstract class TestSceneController : MonoBehaviour {
     protected Vector3[] startingLocPosSG;
     protected Vector3[] startingLocPosBI;
 
-    private GameObject currentObj = null;
+    protected GameObject currentObj = null;
 
     // Rotational directional light
     public GameObject dirLight;
@@ -54,7 +54,6 @@ public abstract class TestSceneController : MonoBehaviour {
             if (shGraphObjs[x] == null) Debug.LogError("shGraphObjs["+x+"] is null");
             if (builtInObjs[x] == null) Debug.LogError("builtInObjs["+x+"] is null");
         }
-        if (dirLight == null) Debug.LogError("dirLight is null");
 
         startingLocPosSG = new Vector3[maxMode];
         startingLocPosBI = new Vector3[maxMode];
@@ -105,6 +104,7 @@ public abstract class TestSceneController : MonoBehaviour {
         if (Input.GetKeyDown("z"))
         {
             rotateLight = !rotateLight;
+            if (dirLight == null) Debug.LogWarning("Warning: dirLight == null");
         }
 
         // Update stuff if we get need to
@@ -117,20 +117,20 @@ public abstract class TestSceneController : MonoBehaviour {
                     shGraphObjs[x].SetActive(true);
                     builtInObjs[x].SetActive(true);
 
-                    shGraphObjs[x].transform.localPosition = startingLocPosSG[x];
-                    builtInObjs[x].transform.localPosition = startingLocPosBI[x];
+                    if (!shGraphObjs[x].isStatic) shGraphObjs[x].transform.localPosition = startingLocPosSG[x];
+                    if (!builtInObjs[x].isStatic) builtInObjs[x].transform.localPosition = startingLocPosBI[x];
                 }
                 else
                 {
                     bool active = ((mode - 1) == x);
                     bool sgActive = active &&  viewingSG;
                     bool biActive = active && !viewingSG;
-                    shGraphObjs[x].SetActive(sgActive);
-                    builtInObjs[x].SetActive(biActive);
+                    if (!shGraphObjs[x].isStatic) shGraphObjs[x].SetActive(sgActive);
+                    if (!builtInObjs[x].isStatic) builtInObjs[x].SetActive(biActive);
                     if (active) currentObj = sgActive ? shGraphObjs[x] : builtInObjs[x];
 
-                    shGraphObjs[x].transform.localPosition = Vector3.zero;
-                    builtInObjs[x].transform.localPosition = Vector3.zero;
+                    if (!shGraphObjs[x].isStatic) shGraphObjs[x].transform.localPosition = Vector3.zero;
+                    if (!builtInObjs[x].isStatic) builtInObjs[x].transform.localPosition = Vector3.zero;
                 }
             }
             if (mode == 0) currentObj = null;
@@ -138,7 +138,7 @@ public abstract class TestSceneController : MonoBehaviour {
             if (canvasController != null) canvasController.UpdateText(currentObj ? currentObj.name : null, mode, maxMode, viewingSG);
         }
 
-        if (rotateLight)
+        if (dirLight != null && rotateLight)
         {
             dirLight.transform.eulerAngles += new Vector3(0.0f, (rotationDegPerS * Time.deltaTime), 0.0f);
         }
@@ -174,11 +174,16 @@ public abstract class TestSceneController : MonoBehaviour {
         float cosY = Mathf.Cos(rotY * Mathf.Deg2Rad);
         float cosX = Mathf.Cos(rotX * Mathf.Deg2Rad);
         cameraGO.transform.position =
-            gameObject.transform.position +
+            GetRotationPointGameObj().transform.position +
             new Vector3(
                 (currentDist * -sinY) * cosX,
                 (currentDist * sinX),
                 (currentDist * -cosY) * cosX);
+    }
+
+    protected virtual GameObject GetRotationPointGameObj()
+    {
+        return gameObject;
     }
 
 }
