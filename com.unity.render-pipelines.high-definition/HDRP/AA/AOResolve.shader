@@ -39,7 +39,7 @@ Shader "Hidden/HDRenderPipeline/AOResolve"
             // Compute the lerp value between the depthgs
             float lerpVal = (depthValues.z - depthValues.y) / (depthValues.x - depthValues.y);
             float2 aoValues = _MultiAOTexture.Load(int3(msTex, 0));
-            return (depthValues.x - depthValues.y < 0.001f) ? aoValues.x : lerp(aoValues.x, aoValues.y, pow(lerpVal, 2.2));
+            return depthValues.x - depthValues.y > 0.000001 ? lerp(aoValues.x, aoValues.y, lerpVal * lerpVal * lerpVal) : aoValues.x;
         }
     ENDHLSL
     SubShader

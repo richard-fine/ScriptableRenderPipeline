@@ -4,6 +4,7 @@ Shader "Hidden/HDRenderPipeline/ColorResolve"
         #pragma target 4.5
         #pragma only_renderers d3d11 ps4 xboxone vulkan metal switch
         #include "CoreRP/ShaderLibrary/Common.hlsl"
+        #include "CoreRP/ShaderLibrary/Color.hlsl"
         #include "../ShaderVariables.hlsl"
         #pragma enable_d3d11_debug_symbols
 
@@ -45,7 +46,7 @@ Shader "Hidden/HDRenderPipeline/ColorResolve"
         {
             FragOut fragOut;
             int2 msTex = int2(input.texcoord.x * _ScreenSize.x, input.texcoord.y * _ScreenSize.y);
-            fragOut.color = (_ColorTextureMS.Load(msTex, 0) + _ColorTextureMS.Load(msTex, 1)) * 0.5f;
+            fragOut.color = FastTonemapInvert((FastTonemap(_ColorTextureMS.Load(msTex, 0)) + FastTonemap(_ColorTextureMS.Load(msTex, 1))) * 0.5f);
             return fragOut;
         }
 
@@ -53,8 +54,8 @@ Shader "Hidden/HDRenderPipeline/ColorResolve"
         {
             FragOut fragOut;
             int2 msTex = int2(input.texcoord.x * _ScreenSize.x, input.texcoord.y * _ScreenSize.y);
-            fragOut.color = (_ColorTextureMS.Load(msTex, 0) + _ColorTextureMS.Load(msTex, 1)
-                            + _ColorTextureMS.Load(msTex, 2) + _ColorTextureMS.Load(msTex, 3)) * 0.25f;
+            fragOut.color = FastTonemapInvert((FastTonemap(_ColorTextureMS.Load(msTex, 0)) + FastTonemap(_ColorTextureMS.Load(msTex, 1))
+                            + FastTonemap(_ColorTextureMS.Load(msTex, 2)) + FastTonemap(_ColorTextureMS.Load(msTex, 3))) * 0.25f);
             return fragOut;
         }
 
@@ -62,10 +63,10 @@ Shader "Hidden/HDRenderPipeline/ColorResolve"
         {
             FragOut fragOut;
             int2 msTex = int2(input.texcoord.x * _ScreenSize.x, input.texcoord.y * _ScreenSize.y);
-            fragOut.color = (_ColorTextureMS.Load(msTex, 0) + _ColorTextureMS.Load(msTex, 1)
-                            + _ColorTextureMS.Load(msTex, 2) + _ColorTextureMS.Load(msTex, 3)
-                            + _ColorTextureMS.Load(msTex, 4) + _ColorTextureMS.Load(msTex, 5)
-                            + _ColorTextureMS.Load(msTex, 6) + _ColorTextureMS.Load(msTex, 7)) * 0.125f;
+            fragOut.color = FastTonemapInvert((FastTonemap(_ColorTextureMS.Load(msTex, 0)) + FastTonemap(_ColorTextureMS.Load(msTex, 1))
+                            + FastTonemap(_ColorTextureMS.Load(msTex, 2)) + FastTonemap(_ColorTextureMS.Load(msTex, 3))
+                            + FastTonemap(_ColorTextureMS.Load(msTex, 4)) + FastTonemap(_ColorTextureMS.Load(msTex, 5))
+                            + FastTonemap(_ColorTextureMS.Load(msTex, 6)) + FastTonemap(_ColorTextureMS.Load(msTex, 7))) * 0.125f);
             return fragOut;
         }
     ENDHLSL

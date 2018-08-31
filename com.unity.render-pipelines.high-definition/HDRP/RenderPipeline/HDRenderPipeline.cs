@@ -1665,7 +1665,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
             }
 
             if (visualEnv.fogType.value != FogType.None)
-                m_SkyManager.RenderOpaqueAtmosphericScattering(cmd);
+                m_SkyManager.RenderOpaqueAtmosphericScattering(cmd, frameSettings.enableMSAA);
         }
 
         public Texture2D ExportSkyToTexture()
