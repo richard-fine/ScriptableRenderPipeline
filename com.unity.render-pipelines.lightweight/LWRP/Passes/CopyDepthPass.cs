@@ -2,6 +2,15 @@ using UnityEngine.Rendering;
 
 namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 {
+    /// <summary>
+    /// Copy the given depth buffer into the given destination depth buffer.
+    /// 
+    /// The pass is used to copy an arbitrary depth buffer to a destination
+    /// for later use in rendering. The pass will either use a custom MSAA resolve
+    /// if the source texture has MSAA or will do a Blit / Copy texture if MSAA is not used.
+    /// An example use for this pass is for copying the depth buffer for use in 'depth fade'
+    /// / 'soft particles rendering effects. 
+    /// </summary>
     public class CopyDepthPass : ScriptableRenderPass
     {
         private RenderTargetHandle source { get; set; }
@@ -9,12 +18,18 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 
         const string k_DepthCopyTag = "Depth Copy";
 
+        /// <summary>
+        /// Configure the pass with the source and destination to execute on.
+        /// </summary>
+        /// <param name="source">Source Render Target</param>
+        /// <param name="destination">Destination Render Targt</param>
         public void Setup(RenderTargetHandle source, RenderTargetHandle destination)
         {
             this.source = source;
             this.destination = destination;
         }
 
+        /// <inheritdoc/>
         public override void Execute(ScriptableRenderer renderer, ScriptableRenderContext context, ref RenderingData renderingData)
         {
             CommandBuffer cmd = CommandBufferPool.Get(k_DepthCopyTag);
@@ -56,7 +71,8 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             context.ExecuteCommandBuffer(cmd);
             CommandBufferPool.Release(cmd);
         }
-
+        
+        /// <inheritdoc/>
         public override void FrameCleanup(CommandBuffer cmd)
         {
             if (destination != RenderTargetHandle.CameraTarget)

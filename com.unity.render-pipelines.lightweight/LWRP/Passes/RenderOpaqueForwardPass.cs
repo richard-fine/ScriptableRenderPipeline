@@ -2,6 +2,12 @@ using UnityEngine.Rendering;
 
 namespace UnityEngine.Experimental.Rendering.LightweightPipeline
 {
+    /// <summary>
+    /// Render all opaque forward objects into the given color and depth target 
+    ///
+    /// This pass is used to render object that have pass names 'LightweightForward' and
+    /// 'SRPDefaultUnlit' and also match the rendering queue range of opaque objects.
+    /// </summary>
     public class RenderOpaqueForwardPass : ScriptableRenderPass
     {
         const string k_RenderOpaquesTag = "Render Opaques";
@@ -26,6 +32,15 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             };
         }
 
+        /// <summary>
+        /// Configure the pass before execution
+        /// </summary>
+        /// <param name="baseDescriptor">Current target descriptor</param>
+        /// <param name="colorAttachmentHandle">Color attachment to render into</param>
+        /// <param name="depthAttachmentHandle">Depth attachment to render into</param>
+        /// <param name="clearFlag">Camera clear flag</param>
+        /// <param name="clearColor">Camera clear color</param>
+        /// <param name="configuration">Specific render configuration</param>
         public void Setup(
             RenderTextureDescriptor baseDescriptor,
             RenderTargetHandle colorAttachmentHandle,
@@ -42,6 +57,7 @@ namespace UnityEngine.Experimental.Rendering.LightweightPipeline
             this.rendererConfiguration = configuration;
         }
 
+        /// <inheritdoc/>
         public override void Execute(ScriptableRenderer renderer, ScriptableRenderContext context, ref RenderingData renderingData)
         {
             CommandBuffer cmd = CommandBufferPool.Get(k_RenderOpaquesTag);
