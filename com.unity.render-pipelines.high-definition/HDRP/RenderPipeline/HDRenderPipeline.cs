@@ -1018,7 +1018,7 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
                     {
                         RenderDebugViewMaterial(m_CullResults, hdCamera, renderContext, cmd);
 
-                        PushColorPickerDebugTexture(cmd, m_CameraColorBuffer, hdCamera);
+                        PushColorPickerDebugTexture(hdCamera, cmd, m_CameraColorBuffer);
                     }
                     else
                     {
@@ -1912,17 +1912,6 @@ namespace UnityEngine.Experimental.Rendering.HDPipeline
 
                 // The DebugNeedsExposure test allows us to set a neutral value if exposure is not needed. This way we don't need to make various tests inside shaders but only in this function.
                 cmd.SetGlobalFloat(HDShaderIDs._DebugExposure, m_CurrentDebugDisplaySettings.DebugNeedsExposure() ? lightingDebugSettings.debugExposure : 0.0f);
-            }
-        }
-
-        public void PushColorPickerDebugTexture(CommandBuffer cmd, RTHandleSystem.RTHandle textureID, HDCamera hdCamera)
-        {
-            if (m_CurrentDebugDisplaySettings.colorPickerDebugSettings.colorPickerMode != ColorPickerDebugMode.None || m_DebugDisplaySettings.falseColorDebugSettings.falseColor || m_DebugDisplaySettings.lightingDebugSettings.debugLightingMode == DebugLightingMode.LuminanceMeter)
-            {
-                using (new ProfilingSample(cmd, "Push To Color Picker"))
-                {
-                    HDUtils.BlitCameraTexture(cmd, hdCamera, textureID, m_DebugColorPickerBuffer);
-                }
             }
         }
 

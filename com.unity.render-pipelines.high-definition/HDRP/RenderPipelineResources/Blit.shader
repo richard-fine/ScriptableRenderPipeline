@@ -44,12 +44,12 @@ Shader "Hidden/HDRenderPipeline/Blit"
 
         float4 FragNearest(Varyings input) : SV_Target
         {
-            return SAMPLE_TEXTURE2D_LOD(_BlitTexture, sampler_PointClamp, input.texcoord, _BlitMipLevel);
+            return SAMPLE_TEXTURE2D_LOD(_BlitTexture, sampler_PointClamp, input.texcoord.xy * _ScreenToTargetScale.xy, _BlitMipLevel);
         }
 
         float4 FragBilinear(Varyings input) : SV_Target
         {
-            return SAMPLE_TEXTURE2D_LOD(_BlitTexture, sampler_LinearClamp, input.texcoord, _BlitMipLevel);
+            return SAMPLE_TEXTURE2D_LOD(_BlitTexture, sampler_LinearClamp, input.texcoord * _ScreenToTargetScale.xy, _BlitMipLevel);
         }
 
     ENDHLSL
